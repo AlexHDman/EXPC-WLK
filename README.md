@@ -16,7 +16,7 @@ speech processing on the local computer.
 - Dynamic Vocabulary R1, disabled by default, plus permanent hotwords and corrections.
 - Russian and English tray interface, status indicator, and optional user autostart.
 - Self-contained portable runtime; no separate Python, venv, or `pip install` is required.
-- Built-in model in the portable release package.
+- Separately downloaded CTranslate2 model, pinned to an immutable revision and SHA-256.
 - Manual GitHub Releases updates with SHA-256 verification, safe staging, and rollback.
 
 ### System requirements
@@ -33,11 +33,16 @@ development tools are not required on the target PC. The launcher is not signed 
 
 Download the complete package from GitHub Releases, extract it to a writable
 folder such as `D:\Portable\EXPC-WLK`, and run `EXPC-WLK.exe`. Keep the adjacent
-`WhisperKey` folder intact. The app runs in the tray and prevents duplicate instances.
+`WhisperKey` folder intact. On first launch, if the model is missing, accept the
+Hugging Face download (about 1.51 GiB). The pinned files are verified and saved
+under `WhisperKey/models/large-v3-turbo`. Existing verified files are reused.
+After this one-time download, dictation needs no internet. The app runs in the
+tray and prevents duplicate instances.
 
 This source repository intentionally excludes the Python runtime, third-party
 binary dependencies, CUDA/cuDNN libraries, built EXEs, and model. Those large
-artifacts belong in the portable ZIP attached to a GitHub Release.
+runtime artifacts belong in the portable ZIP attached to a GitHub Release.
+The model is distributed separately from its pinned Hugging Face source.
 
 ### User data
 
@@ -54,9 +59,10 @@ Updates never overwrite these files. UI language is stored in
 
 ### Current status
 
-The current baseline is `0.8.2`. Portable startup, CUDA transcription, tray
+The current portable release is `0.9.0`. Portable startup, CUDA transcription, tray
 controls, autostart, Dynamic Vocabulary OFF/ON, and local update transactions
-have passed. The first portable Release and a real GitHub update remain to be tested.
+have passed locally. Laptop acceptance and a real 0.9.0 to 0.9.1 GitHub update
+remain to be tested.
 
 ### Update model
 
@@ -64,7 +70,8 @@ Checks are manual and do not block startup or STT. Only the configured official
 repository, stable semantic version, exact release asset, and GitHub SHA-256
 digest are accepted. A separate helper stages a complete app, temporarily keeps
 the previous version, confirms the updated app reaches Ready, and rolls back on
-failure. See [UPDATING.md](UPDATING.md).
+failure. Model files and the installed model manifest are preserved independently
+of application updates. See [UPDATING.md](UPDATING.md).
 
 ### Roadmap
 
@@ -96,7 +103,7 @@ EXPC-WLK — портативная локальная система преоб
 - Dynamic Vocabulary R1, выключенный по умолчанию, постоянные hotwords и corrections.
 - Русский и английский интерфейс трея, индикатор статуса и автозапуск пользователя.
 - Самодостаточный portable runtime: отдельный Python, venv и `pip install` не нужны.
-- Встроенная модель в portable-релизе.
+- Отдельная CTranslate2-модель с закреплёнными revision и SHA-256.
 - Ручное обновление через GitHub Releases с SHA-256, staging и откатом.
 
 ### Системные требования
@@ -112,11 +119,16 @@ EXPC-WLK — портативная локальная система преоб
 
 Скачайте полный пакет из GitHub Releases, распакуйте его в доступный для записи
 каталог, например `D:\Portable\EXPC-WLK`, и запустите `EXPC-WLK.exe`. Сохраните
-рядом весь каталог `WhisperKey`. Приложение работает в трее и блокирует дубликаты.
+рядом весь каталог `WhisperKey`. Если модели нет, первый запуск предложит скачать
+её с Hugging Face (около 1.51 GiB), проверит SHA-256 и сохранит в
+`WhisperKey/models/large-v3-turbo`. Проверенная локальная модель используется
+повторно. После загрузки диктовка работает без интернета. Приложение работает
+в трее и блокирует дубликаты.
 
 Исходный репозиторий намеренно не содержит Python runtime, сторонние бинарные
-зависимости, CUDA/cuDNN, собранные EXE и модель. Они поставляются отдельным
-portable ZIP в GitHub Releases.
+зависимости, CUDA/cuDNN, собранные EXE и модель. Runtime и приложение поставляются
+в portable ZIP GitHub Releases; модель загружается отдельно из закреплённого
+источника Hugging Face.
 
 ### Пользовательские данные
 
@@ -133,9 +145,9 @@ portable ZIP в GitHub Releases.
 
 ### Текущее состояние
 
-Текущая база — `0.8.2`. Проверены portable-запуск, CUDA STT, трей, автозапуск,
-Dynamic Vocabulary OFF/ON и локальные update-транзакции. Первый portable Release
-и реальное обновление через GitHub ещё нужно проверить.
+Текущая portable-версия — `0.9.0`. Проверены portable-запуск, CUDA STT, трей,
+автозапуск, Dynamic Vocabulary OFF/ON и локальные update-транзакции. Проверка на
+ноутбуке и реальное обновление 0.9.0 → 0.9.1 через GitHub ещё предстоят.
 
 ### Модель обновления
 
@@ -143,7 +155,8 @@ Dynamic Vocabulary OFF/ON и локальные update-транзакции. П�
 официальный заданный репозиторий, стабильная semantic version, точный release
 asset и SHA-256 от GitHub. Отдельный helper подготавливает полную новую версию,
 временно сохраняет предыдущую, ждёт состояния «Готов» и откатывает изменения при
-ошибке. Подробности: [UPDATING.md](UPDATING.md).
+ошибке. Файлы модели и её установленный manifest сохраняются независимо от
+обновления приложения. Подробности: [UPDATING.md](UPDATING.md).
 
 ### План развития
 

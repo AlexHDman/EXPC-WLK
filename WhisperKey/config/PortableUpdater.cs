@@ -29,6 +29,12 @@ internal static class PortableUpdater
             string rel = relative.Length == 0 ? name : relative + "/" + name;
             if (Replaced(rel)) continue;
             string target = Path.Combine(destination, name);
+            // Model revision is managed independently from application releases.
+            if (rel.Equals("WhisperKey/config/model-manifest.json", StringComparison.OrdinalIgnoreCase)) {
+                Directory.CreateDirectory(Path.GetDirectoryName(target));
+                File.Copy(entry, target, true);
+                continue;
+            }
             if (Directory.Exists(entry)) {
                 Directory.CreateDirectory(target); Preserve(entry, target, rel);
             } else if (!File.Exists(target)) File.Copy(entry, target);

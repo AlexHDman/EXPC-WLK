@@ -5,7 +5,15 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 
 ## [Unreleased]
 
-- Added the source-repository baseline and release-asset packaging policy.
+## [0.9.0]
+
+- First portable release for Windows x64, with bundled Python and CUDA/cuDNN.
+- Separated large-v3-turbo from the release ZIP: pinned Hugging Face source,
+  revision, SHA-256 and verified first-run download; existing models are reused.
+- Application updates preserve the installed model manifest and model files.
+- Added a repeatable full/update ZIP builder and SHA-256 checksums.
+- Preserved the tested STT, Dynamic Vocabulary R1, RU/EN tray and autostart.
+- The first real 0.9.0 to 0.9.1 update will be tested after laptop acceptance.
 
 ## [0.8.2] - 2026-09-12
 
@@ -19,5 +27,6 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
   official asset selection, SHA-256 verification, staged replacement, startup
   confirmation, and rollback.
 
-[Unreleased]: https://github.com/AlexHDman/EXPC-WLK/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/AlexHDman/EXPC-WLK/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/AlexHDman/EXPC-WLK/releases/tag/v0.9.0
 [0.8.2]: https://github.com/AlexHDman/EXPC-WLK/releases/tag/v0.8.2

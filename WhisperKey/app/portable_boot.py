@@ -35,10 +35,8 @@ def prepare_app():
 
     def model_source(self, key):
         if key == 'large-v3-turbo':
-            model = ROOT / 'models' / key
-            if not (model / 'model.bin').is_file():
-                raise RuntimeError('Missing portable model: ' + str(model))
-            return str(model)
+            from whisper_key.model_store import ensure_model
+            return str(ensure_model(ROOT))
         return original_source(self, key)
 
     def model_cached(self, key):

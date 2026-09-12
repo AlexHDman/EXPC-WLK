@@ -37,6 +37,10 @@ for scenario in ("success", "failed-start", "pre-swap-failure"):
     stage.mkdir(parents=True)
     (install / "EXPC-WLK.exe").write_bytes(fixture.read_bytes())
     (stage / "EXPC-WLK.exe").write_bytes(fixture.read_bytes())
+    (install / "WhisperKey/config").mkdir(parents=True)
+    (stage / "WhisperKey/config").mkdir(parents=True)
+    (install / "WhisperKey/config/model-manifest.json").write_text("old-model-pin")
+    (stage / "WhisperKey/config/model-manifest.json").write_text("new-model-pin")
     for name, value in (("WhisperKey/logs/old.log", b"preserved log"), ("WhisperKey/models/model.bin", b"preserved model")):
         path = install / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -54,6 +58,7 @@ for scenario in ("success", "failed-start", "pre-swap-failure"):
     assert (install / "EXPC-WLK.exe").exists()
     assert (install / "WhisperKey/logs/old.log").read_bytes() == b"preserved log"
     assert (install / "WhisperKey/models/model.bin").read_bytes() == b"preserved model"
+    assert (install / "WhisperKey/config/model-manifest.json").read_text() == "old-model-pin"
     if scenario in ("failed-start", "pre-swap-failure"):
         time.sleep(.3)
         assert (install / "fixture-started").exists(), "Rollback did not start"

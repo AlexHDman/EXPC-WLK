@@ -15,7 +15,7 @@ remain their original names.
 `WhisperKey/config/release.json` is the canonical portable product version:
 
 ```json
-{"version":"0.8.2","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
+{"version":"0.9.0","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
 ```
 
 The existing upstream WhisperKey package metadata remains upstream metadata.
@@ -48,6 +48,30 @@ and [release asset digest](https://docs.github.com/en/rest/releases/assets).
 No repository, release, installer or publishing pipeline was created.
 
 ## Update ZIP contract (complete application, not a delta)
+
+The initial-install download is `EXPC-WLK-portable-v0.9.0.zip`; it contains the
+application and runtime, without model files. The updater uses the fixed-name
+`EXPC-WLK-portable.zip` asset, also without models. Each has a SHA-256 checksum.
+Build with `WhisperKey/config/build_release.py --kind full` or `--kind update`
+using the bundled Python, after running `build_launchers.ps1`.
+
+## Independent model storage
+
+`WhisperKey/config/model-manifest.json` pins the Hugging Face repository,
+40-character revision, file sizes, SHA-256 hashes and the local target path.
+It identifies the exact CTranslate2 weights already used by this application.
+The current repository is `dropbox-dash/faster-whisper-large-v3-turbo` (the former
+`mobiuslabsgmbh` URL redirects there); no `latest` revision is requested.
+
+At first use, `model_store.py` verifies existing files. Missing/invalid files
+trigger a download confirmation. Downloads use temporary files, exact sizes and
+SHA-256, then atomic replacement. Declining or a network/integrity error reports
+a startup failure; it does not use an unverified model. Subsequent valid-model
+launches make no model-network request. Download status appears in the tray tooltip.
+
+Application updates preserve both `WhisperKey/models` and the installed model
+manifest. Changing a model pin is a separate explicit operation; application
+updates never silently advance the model revision. Model files are not Release assets.
 
 The ZIP has no enclosing EXPC-WLK directory. Allowed entries:
 
