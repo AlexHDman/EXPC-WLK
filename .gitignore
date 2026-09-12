@@ -1,0 +1,74 @@
+# Portable deliverables: publish as GitHub Release assets
+/EXPC-WLK.exe
+/WhisperKey/runtime/
+/WhisperKey/models/
+/WhisperKey/app/site-packages/*
+!/WhisperKey/app/site-packages/whisper_key/
+!/WhisperKey/app/site-packages/whisper_key/**
+
+# Compiled/native artifacts
+*.exe
+*.dll
+*.pyd
+*.so
+*.dylib
+*.pyc
+*.pyo
+
+# Build output
+/WhisperKey/config/PortableVersion.generated.cs
+/build/
+/dist/
+/*.zip
+/*.7z
+
+# Logs, caches, diagnostics, and local test results
+/WhisperKey/logs/
+*.log
+*.dmp
+*.dump
+*.stackdump
+.coverage
+/htmlcov/
+/.pytest_cache/
+/.ruff_cache/
+/.mypy_cache/
+/**/__pycache__/
+/LOCALIZATION_UPDATE_TEST_RESULTS.md
+/TEST_RESULTS.md
+/TRAY_AUTOSTART_TEST_RESULTS.md
+/UI_TEST_RESULTS.md
+
+# Update staging and rollback
+/.EXPC-WLK-update-*/
+/*.previous-*/
+/*.failed-*/
+
+# Personal data
+user_settings.yaml
+commands.yaml
+vocabulary.db
+*.db
+*.db-wal
+*.db-shm
+
+# Secrets and machine-local files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*token*
+*secret*
+.venv/
+venv/
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
