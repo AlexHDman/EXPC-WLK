@@ -10,7 +10,7 @@ speech processing on the local computer.
 
 ### Features
 
-- Local STT with the `large-v3-turbo` model.
+- Local STT with pinned `small` and `large-v3-turbo` CTranslate2 models.
 - Automatic NVIDIA CUDA FP16 acceleration with CPU INT8 fallback.
 - Mixed Russian-English speech and English technical-term preservation.
 - Dynamic Vocabulary R1, disabled by default, plus permanent hotwords and corrections.
@@ -31,11 +31,23 @@ development tools are not required on the target PC. The launcher is not signed 
 
 ### Portable usage
 
+### Downloads for v0.9.2
+
+- [Download application](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-portable-v0.9.2.zip)
+- [Download small model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — recommended for CPU
+- [Download large-v3-turbo model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — recommended for NVIDIA CUDA
+
+These links become active when v0.9.2 is published. Model ZIPs are optional:
+extract one into the application's `WhisperKey` directory so its `models` folder
+merges there. If the selected model is absent, EXPC-WLK instead offers to download
+the pinned snapshot from Hugging Face, verifies it, and installs it atomically.
+
 Download the complete package from GitHub Releases, extract it to a writable
 folder such as `D:\Portable\EXPC-WLK`, and run `EXPC-WLK.exe`. Keep the adjacent
-`WhisperKey` folder intact. On first launch, if the model is missing, accept the
-Hugging Face download (about 1.51 GiB). The pinned files are verified and saved
-under `WhisperKey/models/large-v3-turbo`. Existing verified files are reused.
+`WhisperKey` folder intact. On first use, accept the requested model download
+from its pinned Hugging Face revision. CPU/fallback prefers `small`; CUDA prefers
+`large-v3-turbo`. A complete snapshot is verified and atomically installed under
+`WhisperKey/models/<model-id>`. Existing verified models are reused without cache access.
 After this one-time download, dictation needs no internet. The app runs in the
 tray and prevents duplicate instances.
 
@@ -59,7 +71,7 @@ Updates never overwrite these files. UI language is stored in
 
 ### Current status
 
-The current portable build is `0.9.1`. Portable startup, CUDA and CPU transcription, tray
+The current portable release candidate is `0.9.2`. Portable startup, CUDA and CPU transcription, tray
 controls, autostart, Dynamic Vocabulary OFF/ON, and local update transactions
 have passed locally. Laptop acceptance and a real 0.9.0 to 0.9.1 GitHub update
 remain to be tested.
@@ -70,8 +82,8 @@ Checks are manual and do not block startup or STT. Only the configured official
 repository, stable semantic version, exact release asset, and GitHub SHA-256
 digest are accepted. A separate helper stages a complete app, temporarily keeps
 the previous version, confirms the updated app reaches Ready, and rolls back on
-failure. Model files and the installed model manifest are preserved independently
-of application updates. See [UPDATING.md](UPDATING.md).
+failure. Model directories and installed metadata are preserved independently of
+application updates. See [UPDATING.md](UPDATING.md).
 
 ### Roadmap
 
@@ -97,7 +109,7 @@ EXPC-WLK — портативная локальная система преоб
 
 ### Возможности
 
-- Локальное STT с моделью `large-v3-turbo`.
+- Локальное STT с закреплёнными CTranslate2-моделями `small` и `large-v3-turbo`.
 - Автоматическое ускорение NVIDIA CUDA FP16 с переходом на CPU INT8.
 - Смешанная русско-английская речь и сохранение английских технических терминов.
 - Dynamic Vocabulary R1, выключенный по умолчанию, постоянные hotwords и corrections.
@@ -118,12 +130,24 @@ EXPC-WLK — портативная локальная система преоб
 
 ### Использование portable-версии
 
+### Загрузки для v0.9.2
+
+- [Скачать приложение](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-portable-v0.9.2.zip)
+- [Скачать модель small](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — рекомендуется для CPU
+- [Скачать модель large-v3-turbo](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — рекомендуется для NVIDIA CUDA
+
+Ссылки начнут работать после публикации v0.9.2. Model ZIP необязательны: распакуйте
+выбранный архив в каталог приложения `WhisperKey`, объединив его папку `models`.
+Если выбранной модели нет, EXPC-WLK предложит скачать закреплённый snapshot с
+Hugging Face, проверит его и установит атомарно.
+
 Скачайте полный пакет из GitHub Releases, распакуйте его в доступный для записи
 каталог, например `D:\Portable\EXPC-WLK`, и запустите `EXPC-WLK.exe`. Сохраните
-рядом весь каталог `WhisperKey`. Если модели нет, первый запуск предложит скачать
-её с Hugging Face (около 1.51 GiB), проверит SHA-256 и сохранит в
-`WhisperKey/models/large-v3-turbo`. Проверенная локальная модель используется
-повторно. После загрузки диктовка работает без интернета. Приложение работает
+рядом весь каталог `WhisperKey`. При первом использовании выбранной модели
+приложение предложит скачать её из закреплённой ревизии Hugging Face. CPU/fallback
+предпочитает `small`, CUDA — `large-v3-turbo`. Полный snapshot проверяется и
+атомарно устанавливается в `WhisperKey/models/<model-id>`. Проверенные локальные
+модели используются без обращения к cache. После загрузки диктовка работает без интернета. Приложение работает
 в трее и блокирует дубликаты.
 
 Исходный репозиторий намеренно не содержит Python runtime, сторонние бинарные
@@ -146,7 +170,7 @@ EXPC-WLK — портативная локальная система преоб
 
 ### Текущее состояние
 
-Текущая portable-сборка — `0.9.1`. Проверены portable-запуск, CUDA и CPU STT, трей,
+Текущий portable release candidate — `0.9.2`. Проверены portable-запуск, CUDA и CPU STT, трей,
 автозапуск, Dynamic Vocabulary OFF/ON и локальные update-транзакции. Проверка на
 ноутбуке и реальное обновление 0.9.0 → 0.9.1 через GitHub ещё предстоят.
 
@@ -156,7 +180,7 @@ EXPC-WLK — портативная локальная система преоб
 официальный заданный репозиторий, стабильная semantic version, точный release
 asset и SHA-256 от GitHub. Отдельный helper подготавливает полную новую версию,
 временно сохраняет предыдущую, ждёт состояния «Готов» и откатывает изменения при
-ошибке. Файлы модели и её установленный manifest сохраняются независимо от
+ошибке. Каталоги моделей и их installed metadata сохраняются независимо от
 обновления приложения. Подробности: [UPDATING.md](UPDATING.md).
 
 ### План развития

@@ -21,7 +21,14 @@ class HardwareFallbackTests(unittest.TestCase):
     def config(self, mode):
         data = {
             "hardware": {"mode": mode},
-            "whisper": {"device": "cpu", "compute_type": "int8"},
+            "whisper": {
+                "device": "cpu", "compute_type": "int8",
+                "models": {
+                    "small": {"enabled": True},
+                    "large-v3-turbo": {"enabled": True},
+                    "medium": {"enabled": True},
+                },
+            },
         }
         return SimpleNamespace(config=data), data["whisper"].copy()
 
@@ -32,7 +39,9 @@ class HardwareFallbackTests(unittest.TestCase):
         ):
             result = self.main.run_gpu_onboarding(manager, whisper)
         self.assertEqual((result["device"], result["compute_type"]), ("cuda", "float16"))
+        self.assertEqual(result["model"], "large-v3-turbo")
         self.assertFalse(manager.config["_cpu_fallback"])
+        self.assertFalse(result["models"]["medium"]["enabled"])
 
     def test_forced_cpu_does_not_probe_cuda(self):
         manager, whisper = self.config("cpu")
@@ -40,12 +49,14 @@ class HardwareFallbackTests(unittest.TestCase):
             result = self.main.run_gpu_onboarding(manager, whisper)
         probe.assert_not_called()
         self.assertEqual((result["device"], result["compute_type"]), ("cpu", "int8"))
+        self.assertEqual(result["model"], "small")
 
     def test_auto_without_cuda_falls_back_to_cpu(self):
         manager, whisper = self.config("auto")
         with patch("ctranslate2.get_cuda_device_count", return_value=0):
             result = self.main.run_gpu_onboarding(manager, whisper)
         self.assertEqual((result["device"], result["compute_type"]), ("cpu", "int8"))
+        self.assertEqual(result["model"], "small")
         self.assertTrue(manager.config["_cpu_fallback"])
 
     def test_auto_model_init_failure_retries_on_cpu(self):
@@ -57,6 +68,7 @@ class HardwareFallbackTests(unittest.TestCase):
             )
         self.assertIs(result, expected)
         self.assertEqual((whisper["device"], whisper["compute_type"]), ("cpu", "int8"))
+        self.assertEqual(whisper["model"], "small")
         setup.assert_called_once()
 
     def test_forced_cuda_failure_is_reported(self):

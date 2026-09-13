@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 from portable_boot import configure
 configure()
 from whisper_key import system_tray as ui  # noqa: E402 - configure DLL paths first
+from whisper_key import model_store  # noqa: E402
 from whisper_key.platform.windows import icons  # noqa: E402
 
 
@@ -43,6 +44,12 @@ class TrayStatusTests(unittest.TestCase):
         self.engine.device = "cuda"
         self.assertEqual(self.tray._backend_label(), "NVIDIA CUDA (FP16)")
         self.assertIn("NVIDIA CUDA (FP16)", self.tray._title("idle"))
+
+    def test_model_download_progress_uses_active_tray(self):
+        ui._active_icon = self.tray.icon
+        with patch("whisper_key.tray_i18n.startup_language", return_value="en"):
+            model_store.show_progress(5, 10)
+        self.assertEqual(self.tray.icon.title, "EXPC-WLK — Downloading model: 50%")
 
     def test_unavailable_model_and_hotkeys(self):
         self.engine.model = None

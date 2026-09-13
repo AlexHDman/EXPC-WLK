@@ -37,7 +37,8 @@ def build(kind):
             if source.name.lower() in SKIP_NAMES or source.suffix.lower() in SKIP_SUFFIXES:
                 continue
             entries.append((source, rel.as_posix()))
-    for name in ("release.json", "model-manifest.json", "PortableUpdater.exe", "native-model-manifest.json"):
+    for name in ("release.json", "model-manifest.json", "model-catalog.json",
+                 "PortableUpdater.exe", "native-model-manifest.json"):
         entries.append((ROOT / "WhisperKey/config" / name, "WhisperKey/config/" + name))
     for source, _ in entries:
         if not source.is_file():

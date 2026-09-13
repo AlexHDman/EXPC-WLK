@@ -5,6 +5,15 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 
 ## [Unreleased]
 
+## [0.9.2]
+
+- Added pinned local installation for `small` and `large-v3-turbo` models.
+- Model snapshots now download into staging, verify every required file, and
+  install atomically without depending on Hugging Face cache.
+- CPU/fallback prefers `small`; NVIDIA CUDA FP16 prefers `large-v3-turbo`.
+- Added installed-model metadata plus offline, interruption, corruption, move,
+  application update and rollback coverage.
+
 ## [0.9.1]
 
 - Added automatic CPU INT8 fallback when NVIDIA CUDA is unavailable.

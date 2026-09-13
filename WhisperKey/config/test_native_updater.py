@@ -41,7 +41,11 @@ for scenario in ("success", "failed-start", "pre-swap-failure"):
     (stage / "WhisperKey/config").mkdir(parents=True)
     (install / "WhisperKey/config/model-manifest.json").write_text("old-model-pin")
     (stage / "WhisperKey/config/model-manifest.json").write_text("new-model-pin")
-    for name, value in (("WhisperKey/logs/old.log", b"preserved log"), ("WhisperKey/models/model.bin", b"preserved model")):
+    for name, value in (
+        ("WhisperKey/logs/old.log", b"preserved log"),
+        ("WhisperKey/models/small/model.bin", b"preserved model"),
+        ("WhisperKey/models/small/.installed-model.json", b"preserved metadata"),
+    ):
         path = install / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(value)
@@ -57,7 +61,8 @@ for scenario in ("success", "failed-start", "pre-swap-failure"):
     assert result.returncode == (0 if scenario == "success" else 1), scenario
     assert (install / "EXPC-WLK.exe").exists()
     assert (install / "WhisperKey/logs/old.log").read_bytes() == b"preserved log"
-    assert (install / "WhisperKey/models/model.bin").read_bytes() == b"preserved model"
+    assert (install / "WhisperKey/models/small/model.bin").read_bytes() == b"preserved model"
+    assert (install / "WhisperKey/models/small/.installed-model.json").read_bytes() == b"preserved metadata"
     assert (install / "WhisperKey/config/model-manifest.json").read_text() == "old-model-pin"
     if scenario in ("failed-start", "pre-swap-failure"):
         time.sleep(.3)

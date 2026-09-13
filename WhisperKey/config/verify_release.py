@@ -30,7 +30,8 @@ def verify(archive, destination):
         required = {"EXPC-WLK.exe", "WhisperKey/runtime/pythonw.exe", "WhisperKey/runtime/python.exe",
                     "WhisperKey/runtime/python312.dll", "WhisperKey/runtime/python312._pth",
                     "WhisperKey/config/PortableUpdater.exe", "WhisperKey/config/release.json",
-                    "WhisperKey/config/model-manifest.json", "WhisperKey/app/portable_boot.py"}
+                    "WhisperKey/config/model-manifest.json", "WhisperKey/config/model-catalog.json",
+                    "WhisperKey/app/portable_boot.py"}
         if not required <= set(names):
             raise ValueError("Incomplete full portable release")
         if any(name.startswith("WhisperKey/models/") for name in names):

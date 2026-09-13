@@ -15,7 +15,7 @@ remain their original names.
 `WhisperKey/config/release.json` is the canonical portable product version:
 
 ```json
-{"version":"0.9.0","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
+{"version":"0.9.2","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
 ```
 
 The existing upstream WhisperKey package metadata remains upstream metadata.
@@ -57,21 +57,23 @@ using the bundled Python, after running `build_launchers.ps1`.
 
 ## Independent model storage
 
-`WhisperKey/config/model-manifest.json` pins the Hugging Face repository,
-40-character revision, file sizes, SHA-256 hashes and the local target path.
-It identifies the exact CTranslate2 weights already used by this application.
-The current repository is `dropbox-dash/faster-whisper-large-v3-turbo` (the former
-`mobiuslabsgmbh` URL redirects there); no `latest` revision is requested.
+`WhisperKey/config/model-catalog.json` pins `small` and `large-v3-turbo` by public
+Hugging Face repository, exact 40-character commit, required files, exact sizes
+and SHA-256. Production downloads never request `main` or `latest`.
 
-At first use, `model_store.py` verifies existing files. Missing/invalid files
-trigger a download confirmation. Downloads use temporary files, exact sizes and
-SHA-256, then atomic replacement. Declining or a network/integrity error reports
-a startup failure; it does not use an unverified model. Subsequent valid-model
-launches make no model-network request. Download status appears in the tray tooltip.
+At first use, `model_store.py` verifies the complete local snapshot. A missing or
+invalid model triggers confirmation, then every required file is downloaded into
+a same-volume staging directory. Only a complete verified snapshot is atomically
+installed under `WhisperKey/models/<model-id>`. Network interruption, size/hash
+mismatch or install failure leaves the previous target untouched or restores it.
+Each installed model contains `.installed-model.json` with its repository,
+revision, runtime compatibility and deterministic manifest hash.
 
-Application updates preserve both `WhisperKey/models` and the installed model
-manifest. Changing a model pin is a separate explicit operation; application
-updates never silently advance the model revision. Model files are not Release assets.
+Runtime loading receives only the resolved local directory. Valid installed
+models make no network request and do not consult Hugging Face cache, including
+with `HF_HUB_OFFLINE=1` or after moving the portable folder. Download status
+appears in the tray tooltip. Application updates preserve `WhisperKey/models`;
+model files are not Release assets and their lifecycle is independent.
 
 The ZIP has no enclosing EXPC-WLK directory. Allowed entries:
 
@@ -81,7 +83,8 @@ The ZIP has no enclosing EXPC-WLK directory. Allowed entries:
 - `WhisperKey/config/**` — including release.json and PortableUpdater.exe.
 
 Required: launcher, runtime/pythonw.exe, runtime/python312.dll,
-app/portable_boot.py, config/release.json, config/PortableUpdater.exe.
+app/portable_boot.py, config/release.json, config/model-catalog.json,
+config/PortableUpdater.exe.
 Do not include models, logs, user_settings.yaml, commands.yaml or databases.
 The stage validator rejects those user-data names, absolute/traversal paths,
 Windows device names, links and case-insensitive duplicate files.

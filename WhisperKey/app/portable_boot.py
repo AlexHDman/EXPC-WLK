@@ -30,18 +30,21 @@ def prepare_app():
     from whisper_key import main
     from whisper_key.model_registry import ModelRegistry
 
-    original_source = ModelRegistry.get_source
     original_cached = ModelRegistry.is_model_cached
+    local_models = {"small", "large-v3-turbo"}
 
     def model_source(self, key):
-        if key == 'large-v3-turbo':
+        if key in local_models:
             from whisper_key.model_store import ensure_model
-            return str(ensure_model(ROOT))
-        return original_source(self, key)
+            return str(ensure_model(ROOT, key))
+        raise ValueError("Unsupported portable model: " + str(key))
 
     def model_cached(self, key):
-        if key == 'large-v3-turbo':
-            return (ROOT / 'models' / key / 'model.bin').is_file()
+        if key in local_models:
+            from whisper_key.model_store import manifest_for, valid_file
+            manifest = manifest_for(ROOT, key)
+            target = ROOT / 'models' / manifest['directory']
+            return all(valid_file(target / item['name'], item) for item in manifest['files'])
         return original_cached(self, key)
 
     def gpu_check(config_manager, config):
@@ -65,8 +68,13 @@ def prepare_app():
         use_cuda = mode == 'cuda' or (mode == 'auto' and cuda_available)
         config['device'] = 'cuda' if use_cuda else 'cpu'
         config['compute_type'] = 'float16' if use_cuda else 'int8'
+        config['model'] = 'large-v3-turbo' if use_cuda else 'small'
+        for key, model in config.get('models', {}).items():
+            if isinstance(model, dict):
+                model['enabled'] = key in local_models
         config_manager.config['whisper']['device'] = config['device']
         config_manager.config['whisper']['compute_type'] = config['compute_type']
+        config_manager.config['whisper']['model'] = config['model']
         config_manager.config['_hardware_backend'] = (
             'NVIDIA CUDA (FP16)' if use_cuda else 'CPU (INT8)'
         )
@@ -80,8 +88,10 @@ def prepare_app():
             config_manager.config['_hardware_backend'] = 'CPU (INT8)'
             whisper_config['device'] = 'cpu'
             whisper_config['compute_type'] = 'int8'
+            whisper_config['model'] = 'small'
             config_manager.config['whisper']['device'] = 'cpu'
             config_manager.config['whisper']['compute_type'] = 'int8'
+            config_manager.config['whisper']['model'] = 'small'
             return main.setup_whisper_engine(
                 whisper_config, vad_manager, model_registry, config_manager
             )
