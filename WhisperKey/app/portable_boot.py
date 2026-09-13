@@ -45,17 +45,48 @@ def prepare_app():
         return original_cached(self, key)
 
     def gpu_check(config_manager, config):
-        if config['device'] == 'cuda':
+        mode = config_manager.config.get('hardware', {}).get('mode', 'auto')
+        if mode not in ('auto', 'cpu', 'cuda'):
+            mode = 'auto'
+
+        cuda_available = False
+        if mode != 'cpu':
             import ctranslate2
-            if ctranslate2.get_cuda_device_count() < 1:
-                raise RuntimeError('NVIDIA CUDA GPU/driver unavailable. Install a compatible '
-                                   'NVIDIA driver. No automatic CPU fallback was applied.')
-            ctranslate2.get_supported_compute_types('cuda')
+            try:
+                cuda_available = (ctranslate2.get_cuda_device_count() > 0 and
+                                  'float16' in ctranslate2.get_supported_compute_types('cuda'))
+            except Exception:
+                cuda_available = False
+
+        if mode == 'cuda' and not cuda_available:
+            raise RuntimeError('NVIDIA CUDA GPU/driver unavailable. Install a compatible '
+                               'NVIDIA driver or set hardware.mode to auto/cpu.')
+
+        use_cuda = mode == 'cuda' or (mode == 'auto' and cuda_available)
+        config['device'] = 'cuda' if use_cuda else 'cpu'
+        config['compute_type'] = 'float16' if use_cuda else 'int8'
+        config_manager.config['whisper']['device'] = config['device']
+        config_manager.config['whisper']['compute_type'] = config['compute_type']
+        config_manager.config['_hardware_backend'] = (
+            'NVIDIA CUDA (FP16)' if use_cuda else 'CPU (INT8)'
+        )
+        config_manager.config['_cpu_fallback'] = mode == 'auto' and not cuda_available
         return config
 
-    def gpu_failure(error, *args):
+    def gpu_failure(error, whisper_config, vad_manager, model_registry, config_manager):
+        mode = config_manager.config.get('hardware', {}).get('mode', 'auto')
+        if mode == 'auto':
+            config_manager.config['_cpu_fallback'] = True
+            config_manager.config['_hardware_backend'] = 'CPU (INT8)'
+            whisper_config['device'] = 'cpu'
+            whisper_config['compute_type'] = 'int8'
+            config_manager.config['whisper']['device'] = 'cpu'
+            config_manager.config['whisper']['compute_type'] = 'int8'
+            return main.setup_whisper_engine(
+                whisper_config, vad_manager, model_registry, config_manager
+            )
         raise RuntimeError('CUDA model initialization failed. Check NVIDIA driver, GPU memory '
-                           'and bundled native DLLs. No automatic CPU fallback. ' + str(error)) from error
+                           'and bundled native DLLs. ' + str(error)) from error
 
     ModelRegistry.get_source = model_source
     ModelRegistry.is_model_cached = model_cached

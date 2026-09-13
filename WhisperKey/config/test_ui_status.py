@@ -13,7 +13,7 @@ from whisper_key.platform.windows import icons  # noqa: E402
 class TrayStatusTests(unittest.TestCase):
     def setUp(self):
         self.model = object()
-        self.engine = SimpleNamespace(model=self.model, is_loading=lambda: False)
+        self.engine = SimpleNamespace(model=self.model, device="cpu", is_loading=lambda: False)
         self.state = SimpleNamespace(whisper_engine=self.engine, is_model_loading=False,
                                      get_current_state=lambda: "idle")
         self.tray = ui.SystemTray(self.state, {"enabled": True})
@@ -37,6 +37,12 @@ class TrayStatusTests(unittest.TestCase):
         self.state.is_model_loading = False
         self.engine.is_loading = lambda: True
         self.assertEqual(self.tray._display_state("idle"), "initializing")
+
+    def test_active_backend_is_shown(self):
+        self.assertEqual(self.tray._backend_label(), "CPU (INT8)")
+        self.engine.device = "cuda"
+        self.assertEqual(self.tray._backend_label(), "NVIDIA CUDA (FP16)")
+        self.assertIn("NVIDIA CUDA (FP16)", self.tray._title("idle"))
 
     def test_unavailable_model_and_hotkeys(self):
         self.engine.model = None
@@ -77,6 +83,7 @@ class TrayStatusTests(unittest.TestCase):
 
     def test_startup_icon_adopted_without_second_icon(self):
         self.tray.is_running = False
+        self.tray.config_manager = SimpleNamespace(config={"_cpu_fallback": True})
         with patch.object(ui.pystray, "Icon") as constructor, patch.object(ui.threading, "Thread"):
             ui.show_startup_status()
             initial = constructor.return_value
@@ -86,6 +93,9 @@ class TrayStatusTests(unittest.TestCase):
             self.assertIs(self.tray.icon, initial)
             self.assertIsNone(ui._startup_icon)
             self.assertEqual(initial.title, self.tray._title("idle"))
+            initial.notify.assert_called_once_with(
+                self.tray._text("cpu_fallback"), "EXPC-WLK"
+            )
 
     def test_startup_error_visible_and_cleanup(self):
         with patch.object(ui.pystray, "Icon") as constructor:

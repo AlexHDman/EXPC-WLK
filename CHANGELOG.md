@@ -5,6 +5,12 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 
 ## [Unreleased]
 
+## [0.9.1]
+
+- Added automatic CPU INT8 fallback when NVIDIA CUDA is unavailable.
+- Added `hardware.mode` with `auto`, `cpu`, and `cuda` options.
+- Added the active transcription backend to the tray status.
+
 ## [0.9.0]
 
 - First portable release for Windows x64, with bundled Python and CUDA/cuDNN.

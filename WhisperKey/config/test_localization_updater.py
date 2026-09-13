@@ -104,7 +104,10 @@ class LocalizationTests(unittest.TestCase):
             for key in ("autostart", "restart", "folder", "updates", "language", "exit", "log", "settings", "copy"):
                 self.assertIn(i18n.text(key, language), labels)
             for state in ("idle", "recording", "initializing", "unavailable"):
-                self.assertEqual(self.tray._title(state), "EXPC-WLK — " + i18n.text(state, language))
+                self.assertEqual(
+                    self.tray._title(state),
+                    "EXPC-WLK — " + i18n.text(state, language) + " — CPU (INT8)",
+                )
 
     def test_language_switch_persistence_preserves_corrections(self):
         with tempfile.TemporaryDirectory() as temp:

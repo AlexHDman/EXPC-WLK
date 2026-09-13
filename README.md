@@ -11,7 +11,7 @@ speech processing on the local computer.
 ### Features
 
 - Local STT with the `large-v3-turbo` model.
-- NVIDIA CUDA acceleration and an explicit error if the required GPU path is unavailable.
+- Automatic NVIDIA CUDA FP16 acceleration with CPU INT8 fallback.
 - Mixed Russian-English speech and English technical-term preservation.
 - Dynamic Vocabulary R1, disabled by default, plus permanent hotwords and corrections.
 - Russian and English tray interface, status indicator, and optional user autostart.
@@ -22,11 +22,11 @@ speech processing on the local computer.
 ### System requirements
 
 - Windows 10/11 x64, Windows UCRT, and .NET Framework 4.x.
-- NVIDIA GPU and a driver compatible with the bundled CUDA 12 libraries for the
-  default CUDA/float16 configuration.
+- An NVIDIA GPU and compatible driver are optional. `hardware.mode: auto` uses
+  CUDA FP16 when available and otherwise starts on CPU INT8.
 - Microphone and Windows microphone permission.
 
-The NVIDIA driver is an external dependency. Python, the CUDA Toolkit, and
+The NVIDIA driver is required only for GPU acceleration. Python, the CUDA Toolkit, and
 development tools are not required on the target PC. The launcher is not signed yet.
 
 ### Portable usage
@@ -59,7 +59,7 @@ Updates never overwrite these files. UI language is stored in
 
 ### Current status
 
-The current portable release is `0.9.0`. Portable startup, CUDA transcription, tray
+The current portable build is `0.9.1`. Portable startup, CUDA and CPU transcription, tray
 controls, autostart, Dynamic Vocabulary OFF/ON, and local update transactions
 have passed locally. Laptop acceptance and a real 0.9.0 to 0.9.1 GitHub update
 remain to be tested.
@@ -98,7 +98,7 @@ EXPC-WLK — портативная локальная система преоб
 ### Возможности
 
 - Локальное STT с моделью `large-v3-turbo`.
-- Ускорение NVIDIA CUDA и явная ошибка, если требуемый GPU-режим недоступен.
+- Автоматическое ускорение NVIDIA CUDA FP16 с переходом на CPU INT8.
 - Смешанная русско-английская речь и сохранение английских технических терминов.
 - Dynamic Vocabulary R1, выключенный по умолчанию, постоянные hotwords и corrections.
 - Русский и английский интерфейс трея, индикатор статуса и автозапуск пользователя.
@@ -109,10 +109,11 @@ EXPC-WLK — портативная локальная система преоб
 ### Системные требования
 
 - Windows 10/11 x64, Windows UCRT и .NET Framework 4.x.
-- Видеокарта NVIDIA и совместимый с CUDA 12 драйвер для стандартного CUDA/float16.
+- Видеокарта NVIDIA и совместимый драйвер необязательны. Режим
+  `hardware.mode: auto` использует CUDA FP16 при наличии и иначе запускает CPU INT8.
 - Микрофон и разрешение Windows на его использование.
 
-Драйвер NVIDIA остаётся внешней зависимостью. Python, CUDA Toolkit и средства
+Драйвер NVIDIA требуется только для GPU-ускорения. Python, CUDA Toolkit и средства
 разработки на целевом ПК не нужны. Launcher пока не подписан.
 
 ### Использование portable-версии
@@ -145,7 +146,7 @@ EXPC-WLK — портативная локальная система преоб
 
 ### Текущее состояние
 
-Текущая portable-версия — `0.9.0`. Проверены portable-запуск, CUDA STT, трей,
+Текущая portable-сборка — `0.9.1`. Проверены portable-запуск, CUDA и CPU STT, трей,
 автозапуск, Dynamic Vocabulary OFF/ON и локальные update-транзакции. Проверка на
 ноутбуке и реальное обновление 0.9.0 → 0.9.1 через GitHub ещё предстоят.
 
