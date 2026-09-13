@@ -45,6 +45,12 @@ class TrayStatusTests(unittest.TestCase):
         self.assertEqual(self.tray._backend_label(), "NVIDIA CUDA (FP16)")
         self.assertIn("NVIDIA CUDA (FP16)", self.tray._title("idle"))
 
+    def test_active_model_is_shown(self):
+        self.engine.model_key = "small"
+        self.assertEqual(self.tray._model_label(), "small")
+        self.engine.model_key = "large-v3-turbo"
+        self.assertEqual(self.tray._model_label(), "large-v3-turbo")
+
     def test_model_download_progress_uses_active_tray(self):
         ui._active_icon = self.tray.icon
         with patch("whisper_key.tray_i18n.startup_language", return_value="en"):
@@ -90,7 +96,7 @@ class TrayStatusTests(unittest.TestCase):
 
     def test_startup_icon_adopted_without_second_icon(self):
         self.tray.is_running = False
-        self.tray.config_manager = SimpleNamespace(config={"_cpu_fallback": True})
+        self.tray.config_manager = SimpleNamespace(config={"_cpu_notice": True})
         with patch.object(ui.pystray, "Icon") as constructor, patch.object(ui.threading, "Thread"):
             ui.show_startup_status()
             initial = constructor.return_value

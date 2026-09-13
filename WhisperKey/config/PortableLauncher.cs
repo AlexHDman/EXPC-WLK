@@ -9,6 +9,7 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("EXPC-WLK")]
 [assembly: AssemblyProduct("EXPC-WLK")]
 [assembly: AssemblyDescription("EXPC-WLK portable launcher")]
+[assembly: AssemblyCompany("EXPC-WLK")]
 // AssemblyVersion is generated from release.json by build_launchers.ps1.
 
 internal static class PortableLauncher

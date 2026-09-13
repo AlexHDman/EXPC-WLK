@@ -4,6 +4,12 @@ using System.IO;
 using System.Management;
 using System.Threading;
 using System.Windows.Forms;
+using System.Reflection;
+
+[assembly: AssemblyTitle("EXPC-WLK Updater")]
+[assembly: AssemblyProduct("EXPC-WLK")]
+[assembly: AssemblyDescription("EXPC-WLK portable updater")]
+[assembly: AssemblyCompany("EXPC-WLK")]
 
 internal static class PortableUpdater
 {

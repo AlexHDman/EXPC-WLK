@@ -5,6 +5,12 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 
 ## [Unreleased]
 
+- Added clear backend/model tray status and CPU performance guidance.
+- Added local model Download, Select, Verify, and Remove controls.
+- Added privacy-safe diagnostics and a reproducible CPU/CUDA benchmark tool.
+- Embedded the existing multi-size product icon and VERSIONINFO in launcher/updater builds.
+- Added Authenticode signing-ready documentation and script without credentials.
+
 ## [0.9.2]
 
 - Added pinned local installation for `small` and `large-v3-turbo` models.

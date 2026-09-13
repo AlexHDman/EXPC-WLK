@@ -2,6 +2,10 @@
 
 English | [Русский](#русский)
 
+> **RU:** EXPC-WLK работает на CPU, но для комфортной работы рекомендуется NVIDIA GPU с CUDA. CPU-режим может быть значительно медленнее.
+>
+> **EN:** EXPC-WLK works on CPU, but an NVIDIA GPU with CUDA is recommended for comfortable use. CPU mode can be significantly slower.
+
 ## English
 
 EXPC-WLK is portable local speech-to-text for Windows based on Whisper and
@@ -37,7 +41,7 @@ development tools are not required on the target PC. The launcher is not signed 
 - [Download small model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — recommended for CPU
 - [Download large-v3-turbo model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — recommended for NVIDIA CUDA
 
-These links become active when v0.9.2 is published. Model ZIPs are optional:
+These published v0.9.2 model ZIPs are optional:
 extract one into the application's `WhisperKey` directory so its `models` folder
 merges there. If the selected model is absent, EXPC-WLK instead offers to download
 the pinned snapshot from Hugging Face, verifies it, and installs it atomically.
@@ -50,6 +54,11 @@ from its pinned Hugging Face revision. CPU/fallback prefers `small`; CUDA prefer
 `WhisperKey/models/<model-id>`. Existing verified models are reused without cache access.
 After this one-time download, dictation needs no internet. The app runs in the
 tray and prevents duplicate instances.
+
+The tray shows the active backend and model. The model menu provides Download,
+Select, Verify, and Remove actions. Application updates preserve `WhisperKey/models`.
+Development builds are unsigned and Windows SmartScreen may display a warning;
+the future production-signing process is documented in `docs/CODE_SIGNING.md`.
 
 This source repository intentionally excludes the Python runtime, third-party
 binary dependencies, CUDA/cuDNN libraries, built EXEs, and model. Those large
@@ -71,7 +80,7 @@ Updates never overwrite these files. UI language is stored in
 
 ### Current status
 
-The current portable release candidate is `0.9.2`. Portable startup, CUDA and CPU transcription, tray
+The current development release candidate is `0.9.3`. Portable startup, CUDA and CPU transcription, tray
 controls, autostart, Dynamic Vocabulary OFF/ON, and local update transactions
 have passed locally. Laptop acceptance and a real 0.9.0 to 0.9.1 GitHub update
 remain to be tested.
@@ -136,7 +145,7 @@ EXPC-WLK — портативная локальная система преоб
 - [Скачать модель small](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — рекомендуется для CPU
 - [Скачать модель large-v3-turbo](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — рекомендуется для NVIDIA CUDA
 
-Ссылки начнут работать после публикации v0.9.2. Model ZIP необязательны: распакуйте
+Опубликованные model ZIP v0.9.2 необязательны: распакуйте
 выбранный архив в каталог приложения `WhisperKey`, объединив его папку `models`.
 Если выбранной модели нет, EXPC-WLK предложит скачать закреплённый snapshot с
 Hugging Face, проверит его и установит атомарно.
@@ -149,6 +158,12 @@ Hugging Face, проверит его и установит атомарно.
 атомарно устанавливается в `WhisperKey/models/<model-id>`. Проверенные локальные
 модели используются без обращения к cache. После загрузки диктовка работает без интернета. Приложение работает
 в трее и блокирует дубликаты.
+
+В трее показаны активные backend и модель. Меню моделей предоставляет действия
+Скачать, Выбрать, Проверить и Удалить. Обновления приложения сохраняют
+`WhisperKey/models`. Development-сборки не подписаны, поэтому Windows SmartScreen
+может показать предупреждение; процесс будущей production-подписи описан в
+`docs/CODE_SIGNING.md`.
 
 Исходный репозиторий намеренно не содержит Python runtime, сторонние бинарные
 зависимости, CUDA/cuDNN, собранные EXE и модель. Runtime и приложение поставляются
@@ -170,7 +185,7 @@ Hugging Face, проверит его и установит атомарно.
 
 ### Текущее состояние
 
-Текущий portable release candidate — `0.9.2`. Проверены portable-запуск, CUDA и CPU STT, трей,
+Текущий development release candidate — `0.9.3`. Проверены portable-запуск, CUDA и CPU STT, трей,
 автозапуск, Dynamic Vocabulary OFF/ON и локальные update-транзакции. Проверка на
 ноутбуке и реальное обновление 0.9.0 → 0.9.1 через GitHub ещё предстоят.
 

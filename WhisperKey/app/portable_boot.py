@@ -79,12 +79,14 @@ def prepare_app():
             'NVIDIA CUDA (FP16)' if use_cuda else 'CPU (INT8)'
         )
         config_manager.config['_cpu_fallback'] = mode == 'auto' and not cuda_available
+        config_manager.config['_cpu_notice'] = not use_cuda
         return config
 
     def gpu_failure(error, whisper_config, vad_manager, model_registry, config_manager):
         mode = config_manager.config.get('hardware', {}).get('mode', 'auto')
         if mode == 'auto':
             config_manager.config['_cpu_fallback'] = True
+            config_manager.config['_cpu_notice'] = True
             config_manager.config['_hardware_backend'] = 'CPU (INT8)'
             whisper_config['device'] = 'cpu'
             whisper_config['compute_type'] = 'int8'

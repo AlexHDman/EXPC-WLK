@@ -84,6 +84,17 @@ class ModelStoreTests(unittest.TestCase):
             metadata = json.loads((path / model_store.METADATA_NAME).read_text(encoding="utf-8"))
             self.assertEqual(metadata["revision"], self.catalog["models"][model_id]["revision"])
 
+    def test_status_and_remove_are_local(self):
+        from whisper_key import model_store
+        self.assertEqual(model_store.model_status(self.root, "small"), "missing")
+        target = self.install("small")
+        self.assertEqual(model_store.model_status(self.root, "small"), "valid")
+        (target / "model.bin").write_bytes(b"x" * len((target / "model.bin").read_bytes()))
+        self.assertEqual(model_store.model_status(self.root, "small", verify_hashes=True), "corrupt")
+        model_store.remove_model(self.root, "small")
+        self.assertFalse(target.exists())
+        self.assertEqual(model_store.model_status(self.root, "small"), "missing")
+
     def test_existing_valid_model_reused_offline_without_cache(self):
         path = self.install("small")
         forbidden = Mock(side_effect=AssertionError("network/prompt must not be used"))

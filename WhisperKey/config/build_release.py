@@ -22,7 +22,8 @@ def build(kind):
     if archive.exists():
         raise FileExistsError(f"Refusing to overwrite built release: {archive}")
     entries = [(ROOT / "WhisperKey/config/EXPC-WLK.new.exe", "EXPC-WLK.exe")]
-    root_docs = ("README.md", "LICENSE", "CHANGELOG.md", "UPDATING.md") if kind == "full" else ("README.md",)
+    root_docs = ("README.md", "LICENSE", "CHANGELOG.md", "UPDATING.md",
+                 "PERFORMANCE_TEST_RESULTS.md", "REGRESSION_TEST_RESULTS.md") if kind == "full" else ("README.md",)
     entries += [(ROOT / name, name) for name in root_docs]
     trees = ["WhisperKey/app", "WhisperKey/runtime"]
     for tree in trees:
@@ -38,8 +39,10 @@ def build(kind):
                 continue
             entries.append((source, rel.as_posix()))
     for name in ("release.json", "model-manifest.json", "model-catalog.json",
-                 "PortableUpdater.exe", "native-model-manifest.json"):
+                 "PortableUpdater.exe", "native-model-manifest.json", "benchmark.py"):
         entries.append((ROOT / "WhisperKey/config" / name, "WhisperKey/config/" + name))
+    if kind == "full":
+        entries.append((ROOT / "docs/CODE_SIGNING.md", "docs/CODE_SIGNING.md"))
     for source, _ in entries:
         if not source.is_file():
             raise FileNotFoundError(source)
