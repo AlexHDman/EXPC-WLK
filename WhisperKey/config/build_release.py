@@ -45,10 +45,19 @@ def is_release_excluded(relative_path):
             ".dist-info/" in normalized)
 
 
-def build(kind):
+def build(kind, variant=None):
     metadata = json.loads((ROOT / "WhisperKey/config/release.json").read_text(encoding="utf-8"))
     version = metadata["version"]
-    name = f"EXPC-WLK-portable-v{version}.zip" if kind == "full" else metadata["asset_name"]
+    if variant not in (None, "cpu", "cuda"):
+        raise ValueError("Unsupported package variant")
+    if kind == "full" and variant:
+        name = f"EXPC-WLK-portable-{variant.upper()}-v{version}.zip"
+    else:
+        name = f"EXPC-WLK-portable-v{version}.zip" if kind == "full" else metadata["asset_name"]
+    release_metadata = dict(metadata)
+    if variant:
+        release_metadata["package_variant"] = variant
+        release_metadata["asset_name"] = name
     output = ROOT / "dist" / version / "application"
     output.mkdir(parents=True, exist_ok=True)
     archive = output / name
@@ -66,6 +75,11 @@ def build(kind):
             if not source.is_file():
                 continue
             rel = source.relative_to(ROOT)
+            if variant == "cpu":
+                normalized = rel.as_posix().lower()
+                if (normalized.startswith("whisperkey/runtime/native/") or
+                        normalized == "whisperkey/app/site-packages/ctranslate2/cudnn64_9.dll"):
+                    continue
             if any(p.lower() in SKIP_DIRS for p in rel.parts):
                 continue
             if source.name.lower() in SKIP_NAMES or source.suffix.lower() in SKIP_SUFFIXES:
@@ -73,7 +87,7 @@ def build(kind):
             if is_release_excluded(rel):
                 continue
             entries.append((source, rel.as_posix()))
-    for name in ("release.json", "model-manifest.json", "model-catalog.json",
+    for name in ("model-manifest.json", "model-catalog.json",
                  "PortableUpdater.exe", "native-model-manifest.json", "benchmark.py"):
         entries.append((ROOT / "WhisperKey/config" / name, "WhisperKey/config/" + name))
     if kind == "full":
@@ -83,6 +97,11 @@ def build(kind):
             raise FileNotFoundError(source)
     print(f"Building {archive.name}: {len(entries)} files", flush=True)
     with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=9, allowZip64=True) as package:
+        package.writestr("WhisperKey/config/release.json",
+                         json.dumps(release_metadata, indent=2) + "\n")
+        if variant:
+            package.writestr("WhisperKey/config/package-profile.json",
+                             json.dumps({"format": 1, "variant": variant}, indent=2) + "\n")
         for index, (source, member) in enumerate(entries):
             package.write(source, member)
             if index % 500 == 0 or source.stat().st_size > 100 * 1024**2:
@@ -91,13 +110,18 @@ def build(kind):
         digest = hashlib.file_digest(stream, "sha256").hexdigest()
     checksum = archive.with_name(archive.name + ".sha256")
     checksum.write_text(digest + "  " + archive.name + "\n", encoding="ascii")
-    report = {"version": version, "kind": kind, "file": archive.name, "bytes": archive.stat().st_size,
-              "sha256": digest, "entries": len(entries), "github_asset_under_2gib": archive.stat().st_size < 2 * 1024**3}
-    (output / (kind + "-build.json")).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    report = {"version": version, "kind": kind, "variant": variant, "file": archive.name,
+              "bytes": archive.stat().st_size, "sha256": digest,
+              "entries": len(entries) + 1 + bool(variant),
+              "github_asset_under_2gib": archive.stat().st_size < 2 * 1024**3}
+    report_name = f"{kind}-{variant}-build.json" if variant else f"{kind}-build.json"
+    (output / report_name).write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report), flush=True)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--kind", choices=("full", "update"), required=True)
-    build(parser.parse_args().kind)
+    parser.add_argument("--variant", choices=("cpu", "cuda"))
+    args = parser.parse_args()
+    build(args.kind, args.variant)

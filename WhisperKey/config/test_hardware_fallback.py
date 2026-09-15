@@ -40,6 +40,15 @@ class HardwareFallbackTests(unittest.TestCase):
             result = self.main.run_gpu_onboarding(manager, whisper)
         self.assertEqual((result["device"], result["compute_type"]), ("cuda", "float16"))
         self.assertEqual(result["model"], "large-v3-turbo")
+
+    def test_cpu_package_forces_cpu_even_when_cuda_is_available(self):
+        manager, whisper = self.config("auto")
+        with patch.object(portable_boot, "package_variant", return_value="cpu"), patch(
+            "ctranslate2.get_cuda_device_count", side_effect=AssertionError("must not probe CUDA")
+        ):
+            result = self.main.run_gpu_onboarding(manager, whisper)
+        self.assertEqual((result["device"], result["compute_type"], result["model"]),
+                         ("cpu", "int8", "small"))
         self.assertFalse(manager.config["_cpu_fallback"])
         self.assertFalse(result["models"]["medium"]["enabled"])
 

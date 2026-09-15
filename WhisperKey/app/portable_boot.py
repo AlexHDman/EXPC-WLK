@@ -8,6 +8,15 @@ ROOT = Path(__file__).resolve().parent.parent
 DLL_HANDLES = []
 
 
+def package_variant():
+    profile = ROOT / 'config' / 'package-profile.json'
+    if not profile.is_file():
+        return None
+    import json
+    variant = json.loads(profile.read_text(encoding='utf-8')).get('variant')
+    return variant if variant in ('cpu', 'cuda') else None
+
+
 def configure():
     os.chdir(ROOT)
     native = ROOT / 'runtime' / 'native'
@@ -22,7 +31,8 @@ def configure():
     for folder in (ROOT / 'runtime', native,
                    ROOT / 'app' / 'site-packages' / 'pywin32_system32',
                    ROOT / 'app' / 'site-packages' / 'ctranslate2'):
-        DLL_HANDLES.append(os.add_dll_directory(str(folder)))
+        if folder.is_dir():
+            DLL_HANDLES.append(os.add_dll_directory(str(folder)))
     import pywin32_bootstrap  # noqa: F401
 
 
@@ -51,6 +61,8 @@ def prepare_app():
         mode = config_manager.config.get('hardware', {}).get('mode', 'auto')
         if mode not in ('auto', 'cpu', 'cuda'):
             mode = 'auto'
+        if package_variant() == 'cpu':
+            mode = 'cpu'
 
         cuda_available = False
         if mode != 'cpu':

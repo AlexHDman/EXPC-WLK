@@ -48,6 +48,16 @@ class UpdateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             updater.check_latest(self.config, lambda url: self.data)
 
+    def test_split_package_tracks_same_variant(self):
+        config = {**self.config, "package_variant": "cpu",
+                  "asset_name": "EXPC-WLK-portable-CPU-v0.8.2.zip"}
+        name = "EXPC-WLK-portable-CPU-v0.8.3.zip"
+        data = {**self.data, "assets": [{**self.data["assets"][0], "name": name,
+                "browser_download_url": "https://github.com/example/EXPC-WLK/releases/download/v0.8.3/" + name}]}
+        result = updater.check_latest(config, lambda url: data)
+        self.assertEqual(result["status"], "available")
+        self.assertTrue(result["url"].endswith(name))
+
     def archive(self, extra=None):
         path = self.root / "release.zip"
         files = {"EXPC-WLK.exe": b"MZ", "WhisperKey/runtime/pythonw.exe": b"MZ",

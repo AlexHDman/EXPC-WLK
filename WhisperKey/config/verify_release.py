@@ -36,9 +36,25 @@ def verify(archive, destination):
             raise ValueError("Incomplete full portable release")
         if any(name.startswith("WhisperKey/models/") for name in names):
             raise ValueError("Application release must not bundle model files")
-        version = json.loads(package.read("WhisperKey/config/release.json"))["version"]
-        if archive.name != f"EXPC-WLK-portable-v{version}.zip":
+        metadata = json.loads(package.read("WhisperKey/config/release.json"))
+        version = metadata["version"]
+        variant = metadata.get("package_variant")
+        expected_name = (f"EXPC-WLK-portable-{variant.upper()}-v{version}.zip"
+                         if variant in ("cpu", "cuda") else f"EXPC-WLK-portable-v{version}.zip")
+        if archive.name != expected_name:
             raise ValueError("Archive name/version mismatch")
+        if variant in ("cpu", "cuda"):
+            profile = json.loads(package.read("WhisperKey/config/package-profile.json"))
+            if profile != {"format": 1, "variant": variant}:
+                raise ValueError("Package profile mismatch")
+        native = [name for name in names if name.lower().startswith("whisperkey/runtime/native/")]
+        cuda_libraries = [name for name in names if re.match(
+            r"(?i).*/(?:cuda|cublas|cudnn)[^/]*\.dll$", name
+        )]
+        if variant == "cpu" and (native or cuda_libraries):
+            raise ValueError("CPU package contains CUDA/cuDNN runtime")
+        if variant == "cuda" and not native:
+            raise ValueError("CUDA package is missing native runtime")
         # Inspect app-owned text; third-party license/metadata content is retained.
         scanned = 0
         for name in names:
@@ -56,7 +72,7 @@ def verify(archive, destination):
             raise ValueError("Corrupt ZIP member: " + bad)
         destination.mkdir(parents=True)
         package.extractall(destination)
-    print(json.dumps({"version": version, "sha256": digest, "entries": len(names),
+    print(json.dumps({"version": version, "variant": variant, "sha256": digest, "entries": len(names),
                       "scanned_app_text_files": scanned, "extracted": str(destination), "pass": True}), flush=True)
 
 
