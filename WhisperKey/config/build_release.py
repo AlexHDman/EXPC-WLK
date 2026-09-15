@@ -11,6 +11,39 @@ SKIP_DIRS = {"__pycache__", ".git", ".pytest_cache", ".ruff_cache"}
 SKIP_NAMES = {"user_settings.yaml", "commands.yaml", "vocabulary.db", "direct_url.json"}
 SKIP_SUFFIXES = {".pyc", ".pyo", ".log", ".dmp", ".tmp", ".db", ".db-wal", ".db-shm"}
 
+# Development-only modules present in the bundled environment.  Keep the source
+# runtime intact and omit these only from release archives.
+PACKAGE_SKIP_PREFIXES = (
+    "whisperkey/app/site-packages/onnxruntime/tools/",
+    "whisperkey/app/site-packages/onnxruntime/transformers/",
+    "whisperkey/app/site-packages/pythonwin/",
+    "whisperkey/app/site-packages/ten_vad/lib/macos/",
+    "whisperkey/app/site-packages/hf_xet/",
+    "whisperkey/runtime/lib/venv/",
+    "whisperkey/runtime/lib/lib2to3/",
+    "whisperkey/runtime/lib/unittest/",
+    "whisperkey/runtime/lib/turtledemo/",
+    "whisperkey/runtime/lib/pydoc_data/",
+)
+PACKAGE_SKIP_FILES = {
+    "whisperkey/app/site-packages/pywin32.chm",
+    "whisperkey/runtime/dlls/tcl86t.dll",
+    "whisperkey/runtime/dlls/tk86t.dll",
+    "whisperkey/runtime/lib/pydoc.py",
+    "whisperkey/runtime/lib/turtle.py",
+    "whisperkey/runtime/lib/doctest.py",
+}
+
+
+def is_release_excluded(relative_path):
+    normalized = relative_path.as_posix().lower()
+    if normalized in PACKAGE_SKIP_FILES or normalized.startswith(PACKAGE_SKIP_PREFIXES):
+        return True
+    # hf_xet is an optional accelerated Hugging Face transfer client. EXPC-WLK's
+    # pinned model downloader uses urllib, so its metadata is unnecessary too.
+    return (normalized.startswith("whisperkey/app/site-packages/hf_xet-") and
+            ".dist-info/" in normalized)
+
 
 def build(kind):
     metadata = json.loads((ROOT / "WhisperKey/config/release.json").read_text(encoding="utf-8"))
@@ -36,6 +69,8 @@ def build(kind):
             if any(p.lower() in SKIP_DIRS for p in rel.parts):
                 continue
             if source.name.lower() in SKIP_NAMES or source.suffix.lower() in SKIP_SUFFIXES:
+                continue
+            if is_release_excluded(rel):
                 continue
             entries.append((source, rel.as_posix()))
     for name in ("release.json", "model-manifest.json", "model-catalog.json",

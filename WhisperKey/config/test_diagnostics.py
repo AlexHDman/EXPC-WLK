@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 import sys
@@ -21,7 +22,8 @@ class DiagnosticsTests(unittest.TestCase):
             data = diagnostics.collect(Engine(), ROOT)
         status.assert_called_once_with(ROOT, "small", verify_hashes=True)
         report = diagnostics.format_report(data)
-        for value in ("0.9.3", "small", "CPU", "int8", "Model revision", "Model directory"):
+        version = json.loads((ROOT / "config/release.json").read_text(encoding="utf-8"))["version"]
+        for value in (version, "small", "CPU", "int8", "Model revision", "Model directory"):
             self.assertIn(value, report)
         for forbidden in ("token", "password", "transcription", "hotword", "correction", "dictionary"):
             self.assertNotIn(forbidden, report.lower())
