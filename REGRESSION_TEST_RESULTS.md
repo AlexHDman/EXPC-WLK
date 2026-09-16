@@ -1,6 +1,6 @@
 # EXPC-WLK regression matrix
 
-Date: 2026-09-14
+Date: 2026-09-16
 
 | # | Scenario | Result |
 |---:|---|---|
@@ -29,8 +29,15 @@ Date: 2026-09-14
 | 23 | Autostart path after move | PASS |
 | 24 | Diagnostics privacy | PASS |
 | 25 | Model-free application package | PASS |
+| 26 | No-microphone error path | PASS |
+| 27 | Bundled TLS CA / Hugging Face HTTPS | PASS |
+| 28 | ZIP CRC/layout/SHA-256 | PASS |
+| 29 | Icon and VERSIONINFO 1.0.0.0 | PASS |
+| 30 | Optional signing guard / no credentials | PASS |
 
 Automated coverage is in `WhisperKey/config/test_*.py`, `verify_release.py`,
-`verify_model_assets.py`, and `portable_selftest.py`. Hardware transcription,
-hotkey, clipboard and duplicate-instance rows also retain their prior live PASS
-evidence from the v0.9.1/v0.9.2 acceptance runs.
+`verify_model_assets.py`, and `portable_selftest.py`. CPU/CUDA transcription and
+Dynamic Vocabulary OFF/ON were rerun from clean extracted v1.0.0 candidates with
+separate verified model assets. Hotkey, clipboard/paste, microphone failure and
+duplicate-instance paths have controlled regressions; OS mutex, autostart and
+native updater rollback were also exercised.

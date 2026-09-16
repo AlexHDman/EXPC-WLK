@@ -28,6 +28,11 @@ def configure():
     os.environ['HF_HOME'] = str(ROOT / 'cache' / 'huggingface')
     os.environ['HF_HUB_OFFLINE'] = '1'
     os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
+    ca_bundle = ROOT / 'app' / 'site-packages' / 'certifi' / 'cacert.pem'
+    if not ca_bundle.is_file():
+        raise FileNotFoundError('Bundled CA certificate store is missing: ' + str(ca_bundle))
+    os.environ['SSL_CERT_FILE'] = str(ca_bundle)
+    os.environ.pop('SSL_CERT_DIR', None)
     for folder in (ROOT / 'runtime', native,
                    ROOT / 'app' / 'site-packages' / 'pywin32_system32',
                    ROOT / 'app' / 'site-packages' / 'ctranslate2'):

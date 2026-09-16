@@ -3,9 +3,9 @@
 </p>
 # EXPC-WLK
 
-English | [Русский](#русский)
+English | [╨а╤Г╤Б╤Б╨║╨╕╨╣](#╤А╤Г╤Б╤Б╨║╨╕╨╣)
 
-> **RU:** EXPC-WLK работает на CPU, но для комфортной работы рекомендуется NVIDIA GPU с CUDA. CPU-режим может быть значительно медленнее.
+> **RU:** EXPC-WLK ╤А╨░╨▒╨╛╤В╨░╨╡╤В ╨╜╨░ CPU, ╨╜╨╛ ╨┤╨╗╤П ╨║╨╛╨╝╤Д╨╛╤А╤В╨╜╨╛╨╣ ╤А╨░╨▒╨╛╤В╤Л ╤А╨╡╨║╨╛╨╝╨╡╨╜╨┤╤Г╨╡╤В╤Б╤П NVIDIA GPU ╤Б CUDA. CPU-╤А╨╡╨╢╨╕╨╝ ╨╝╨╛╨╢╨╡╤В ╨▒╤Л╤В╤М ╨╖╨╜╨░╤З╨╕╤В╨╡╨╗╤М╨╜╨╛ ╨╝╨╡╨┤╨╗╨╡╨╜╨╜╨╡╨╡.
 >
 > **EN:** EXPC-WLK works on CPU, but an NVIDIA GPU with CUDA is recommended for comfortable use. CPU mode can be significantly slower.
 
@@ -34,15 +34,24 @@ speech processing on the local computer.
 - Microphone and Windows microphone permission.
 
 The NVIDIA driver is required only for GPU acceleration. Python, the CUDA Toolkit, and
-development tools are not required on the target PC. The launcher is not signed yet.
+development tools are not required on the target PC.
+
+| Package | Model | Backend | Choose it when |
+|---|---|---|---|
+| CPU | `small` | CPU INT8 | No compatible NVIDIA GPU, or maximum portability matters |
+| CUDA | `large-v3-turbo` | NVIDIA CUDA FP16 | A compatible NVIDIA GPU and current driver are available |
+
+The CPU ZIP excludes CUDA/cuDNN. The CUDA ZIP includes its native runtime; only
+the NVIDIA driver is required separately. CPU transcription can be substantially
+slower than realtime on older processors.
 
 ### Portable usage
 
-### Downloads for v0.9.2
+### Downloads
 
-- [Download application](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-portable-v0.9.2.zip)
-- [Download small model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — recommended for CPU
-- [Download large-v3-turbo model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — recommended for NVIDIA CUDA
+- [Download CPU/CUDA application](https://github.com/AlexHDman/EXPC-WLK/releases)
+- [Download small model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) тАФ recommended for CPU
+- [Download large-v3-turbo model](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) тАФ recommended for NVIDIA CUDA
 
 These published v0.9.2 model ZIPs are optional:
 extract one into the application's `WhisperKey` directory so its `models` folder
@@ -61,7 +70,10 @@ tray and prevents duplicate instances.
 The tray shows the active backend and model. The model menu provides Download,
 Select, Verify, and Remove actions. Application updates preserve `WhisperKey/models`.
 Development builds are unsigned and Windows SmartScreen may display a warning;
-the future production-signing process is documented in `docs/CODE_SIGNING.md`.
+verify the adjacent SHA-256 file and download only from the official repository.
+The optional production-signing process is documented in `docs/CODE_SIGNING.md`.
+If no microphone is available, startup reports an input-device error; check the
+Windows microphone privacy permission and the selected sound input.
 
 This source repository intentionally excludes the Python runtime, third-party
 binary dependencies, CUDA/cuDNN libraries, built EXEs, and model. Those large
@@ -81,14 +93,7 @@ User settings and local data remain outside the application folder:
 Updates never overwrite these files. UI language is stored in
 `system_tray.language` without changing vocabulary, hotwords, or corrections.
 
-### Current status
-
-The current development release candidate is `0.9.3`. Portable startup, CUDA and CPU transcription, tray
-controls, autostart, Dynamic Vocabulary OFF/ON, and local update transactions
-have passed locally. Laptop acceptance and a real 0.9.0 to 0.9.1 GitHub update
-remain to be tested.
-
-### Update model
+### Updates
 
 Checks are manual and do not block startup or STT. Only the configured official
 repository, stable semantic version, exact release asset, and GitHub SHA-256
@@ -97,85 +102,80 @@ the previous version, confirms the updated app reaches Ready, and rolls back on
 failure. Model directories and installed metadata are preserved independently of
 application updates. See [UPDATING.md](UPDATING.md).
 
-### Roadmap
+## ╨а╤Г╤Б╤Б╨║╨╕╨╣
 
-- Publish and test the first complete portable GitHub Release.
-- Add signed release provenance when signing is available.
-- R2: opt-in learning from explicit corrections.
-- R3: context-aware post-correction.
-- R4: optional online terminology resolver.
+EXPC-WLK тАФ ╨┐╨╛╤А╤В╨░╤В╨╕╨▓╨╜╨░╤П ╨╗╨╛╨║╨░╨╗╤М╨╜╨░╤П ╤Б╨╕╤Б╤В╨╡╨╝╨░ ╨┐╤А╨╡╨╛╨▒╤А╨░╨╖╨╛╨▓╨░╨╜╨╕╤П ╤А╨╡╤З╨╕ ╨▓ ╤В╨╡╨║╤Б╤В ╨┤╨╗╤П Windows
+╨╜╨░ ╨▒╨░╨╖╨╡ Whisper ╨╕ faster-whisper. ╨Ю╨╜╨░ ╨╛╨▒╨╡╤Б╨┐╨╡╤З╨╕╨▓╨░╨╡╤В ╨▒╤Л╤Б╤В╤А╤Г╤О ╨┤╨╕╨║╤В╨╛╨▓╨║╤Г ╨▓ ╨╗╤О╨▒╨╛╨╝
+╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╕ ╤Б ╨╛╨▒╤А╨░╨▒╨╛╤В╨║╨╛╨╣ ╤А╨╡╤З╨╕ ╨╜╨░ ╨║╨╛╨╝╨┐╤М╤О╤В╨╡╤А╨╡ ╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤П.
 
-R2-R4 are outside the current baseline.
+### ╨Т╨╛╨╖╨╝╨╛╨╢╨╜╨╛╤Б╤В╨╕
 
-### Development principle
+- ╨Ы╨╛╨║╨░╨╗╤М╨╜╨╛╨╡ STT ╤Б ╨╖╨░╨║╤А╨╡╨┐╨╗╤С╨╜╨╜╤Л╨╝╨╕ CTranslate2-╨╝╨╛╨┤╨╡╨╗╤П╨╝╨╕ `small` ╨╕ `large-v3-turbo`.
+- ╨Р╨▓╤В╨╛╨╝╨░╤В╨╕╤З╨╡╤Б╨║╨╛╨╡ ╤Г╤Б╨║╨╛╤А╨╡╨╜╨╕╨╡ NVIDIA CUDA FP16 ╤Б ╨┐╨╡╤А╨╡╤Е╨╛╨┤╨╛╨╝ ╨╜╨░ CPU INT8.
+- ╨б╨╝╨╡╤И╨░╨╜╨╜╨░╤П ╤А╤Г╤Б╤Б╨║╨╛-╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨░╤П ╤А╨╡╤З╤М ╨╕ ╤Б╨╛╤Е╤А╨░╨╜╨╡╨╜╨╕╨╡ ╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕╤Е ╤В╨╡╤Е╨╜╨╕╤З╨╡╤Б╨║╨╕╤Е ╤В╨╡╤А╨╝╨╕╨╜╨╛╨▓.
+- Dynamic Vocabulary R1, ╨▓╤Л╨║╨╗╤О╤З╨╡╨╜╨╜╤Л╨╣ ╨┐╨╛ ╤Г╨╝╨╛╨╗╤З╨░╨╜╨╕╤О, ╨┐╨╛╤Б╤В╨╛╤П╨╜╨╜╤Л╨╡ hotwords ╨╕ corrections.
+- ╨а╤Г╤Б╤Б╨║╨╕╨╣ ╨╕ ╨░╨╜╨│╨╗╨╕╨╣╤Б╨║╨╕╨╣ ╨╕╨╜╤В╨╡╤А╤Д╨╡╨╣╤Б ╤В╤А╨╡╤П, ╨╕╨╜╨┤╨╕╨║╨░╤В╨╛╤А ╤Б╤В╨░╤В╤Г╤Б╨░ ╨╕ ╨░╨▓╤В╨╛╨╖╨░╨┐╤Г╤Б╨║ ╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤П.
+- ╨б╨░╨╝╨╛╨┤╨╛╤Б╤В╨░╤В╨╛╤З╨╜╤Л╨╣ portable runtime: ╨╛╤В╨┤╨╡╨╗╤М╨╜╤Л╨╣ Python, venv ╨╕ `pip install` ╨╜╨╡ ╨╜╤Г╨╢╨╜╤Л.
+- ╨Ю╤В╨┤╨╡╨╗╤М╨╜╨░╤П CTranslate2-╨╝╨╛╨┤╨╡╨╗╤М ╤Б ╨╖╨░╨║╤А╨╡╨┐╨╗╤С╨╜╨╜╤Л╨╝╨╕ revision ╨╕ SHA-256.
+- ╨а╤Г╤З╨╜╨╛╨╡ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╤З╨╡╤А╨╡╨╖ GitHub Releases ╤Б SHA-256, staging ╨╕ ╨╛╤В╨║╨░╤В╨╛╨╝.
 
-Build the smallest practical offline change, test it with the real STT pipeline,
-measure the result, and expand only after it is proven. Keep working STT, GPU,
-hotword, correction, and model-loading behavior stable.
+### ╨б╨╕╤Б╤В╨╡╨╝╨╜╤Л╨╡ ╤В╤А╨╡╨▒╨╛╨▓╨░╨╜╨╕╤П
 
-## Русский
+- Windows 10/11 x64, Windows UCRT ╨╕ .NET Framework 4.x.
+- ╨Т╨╕╨┤╨╡╨╛╨║╨░╤А╤В╨░ NVIDIA ╨╕ ╤Б╨╛╨▓╨╝╨╡╤Б╤В╨╕╨╝╤Л╨╣ ╨┤╤А╨░╨╣╨▓╨╡╤А ╨╜╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╤Л. ╨а╨╡╨╢╨╕╨╝
+  `hardware.mode: auto` ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╤В CUDA FP16 ╨┐╤А╨╕ ╨╜╨░╨╗╨╕╤З╨╕╨╕ ╨╕ ╨╕╨╜╨░╤З╨╡ ╨╖╨░╨┐╤Г╤Б╨║╨░╨╡╤В CPU INT8.
+- ╨Ь╨╕╨║╤А╨╛╤Д╨╛╨╜ ╨╕ ╤А╨░╨╖╤А╨╡╤И╨╡╨╜╨╕╨╡ Windows ╨╜╨░ ╨╡╨│╨╛ ╨╕╤Б╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╨╜╨╕╨╡.
 
-EXPC-WLK — портативная локальная система преобразования речи в текст для Windows
-на базе Whisper и faster-whisper. Она обеспечивает быструю диктовку в любом
-приложении с обработкой речи на компьютере пользователя.
+╨Ф╤А╨░╨╣╨▓╨╡╤А NVIDIA ╤В╤А╨╡╨▒╤Г╨╡╤В╤Б╤П ╤В╨╛╨╗╤М╨║╨╛ ╨┤╨╗╤П GPU-╤Г╤Б╨║╨╛╤А╨╡╨╜╨╕╤П. Python, CUDA Toolkit ╨╕ ╤Б╤А╨╡╨┤╤Б╤В╨▓╨░
+╤А╨░╨╖╤А╨░╨▒╨╛╤В╨║╨╕ ╨╜╨░ ╤Ж╨╡╨╗╨╡╨▓╨╛╨╝ ╨Я╨Ъ ╨╜╨╡ ╨╜╤Г╨╢╨╜╤Л.
 
-### Возможности
+| ╨Я╨░╨║╨╡╤В | ╨Ь╨╛╨┤╨╡╨╗╤М | Backend | ╨Ъ╨╛╨│╨┤╨░ ╨▓╤Л╨▒╨╕╤А╨░╤В╤М |
+|---|---|---|---|
+| CPU | `small` | CPU INT8 | ╨Э╨╡╤В ╤Б╨╛╨▓╨╝╨╡╤Б╤В╨╕╨╝╨╛╨╣ NVIDIA GPU ╨╕╨╗╨╕ ╨▓╨░╨╢╨╜╨░ ╨╝╨░╨║╤Б╨╕╨╝╨░╨╗╤М╨╜╨░╤П ╨┐╨╡╤А╨╡╨╜╨╛╤Б╨╕╨╝╨╛╤Б╤В╤М |
+| CUDA | `large-v3-turbo` | NVIDIA CUDA FP16 | ╨Х╤Б╤В╤М ╤Б╨╛╨▓╨╝╨╡╤Б╤В╨╕╨╝╨░╤П NVIDIA GPU ╨╕ ╨░╨║╤В╤Г╨░╨╗╤М╨╜╤Л╨╣ ╨┤╤А╨░╨╣╨▓╨╡╤А |
 
-- Локальное STT с закреплёнными CTranslate2-моделями `small` и `large-v3-turbo`.
-- Автоматическое ускорение NVIDIA CUDA FP16 с переходом на CPU INT8.
-- Смешанная русско-английская речь и сохранение английских технических терминов.
-- Dynamic Vocabulary R1, выключенный по умолчанию, постоянные hotwords и corrections.
-- Русский и английский интерфейс трея, индикатор статуса и автозапуск пользователя.
-- Самодостаточный portable runtime: отдельный Python, venv и `pip install` не нужны.
-- Отдельная CTranslate2-модель с закреплёнными revision и SHA-256.
-- Ручное обновление через GitHub Releases с SHA-256, staging и откатом.
+CPU ZIP ╨╜╨╡ ╤Б╨╛╨┤╨╡╤А╨╢╨╕╤В CUDA/cuDNN. CUDA ZIP ╤Б╨╛╨┤╨╡╤А╨╢╨╕╤В ╨╜╨╡╨╛╨▒╤Е╨╛╨┤╨╕╨╝╤Л╨╣ native runtime;
+╨╛╤В╨┤╨╡╨╗╤М╨╜╨╛ ╨╜╤Г╨╢╨╡╨╜ ╤В╨╛╨╗╤М╨║╨╛ ╨┤╤А╨░╨╣╨▓╨╡╤А NVIDIA. ╨Э╨░ ╤Б╤В╨░╤А╤Л╤Е CPU ╤А╨░╤Б╨┐╨╛╨╖╨╜╨░╨▓╨░╨╜╨╕╨╡ ╨╝╨╛╨╢╨╡╤В ╨▒╤Л╤В╤М
+╨╖╨╜╨░╤З╨╕╤В╨╡╨╗╤М╨╜╨╛ ╨╝╨╡╨┤╨╗╨╡╨╜╨╜╨╡╨╡ ╤А╨╡╨░╨╗╤М╨╜╨╛╨│╨╛ ╨▓╤А╨╡╨╝╨╡╨╜╨╕.
 
-### Системные требования
+### ╨Ш╤Б╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╨╜╨╕╨╡ portable-╨▓╨╡╤А╤Б╨╕╨╕
 
-- Windows 10/11 x64, Windows UCRT и .NET Framework 4.x.
-- Видеокарта NVIDIA и совместимый драйвер необязательны. Режим
-  `hardware.mode: auto` использует CUDA FP16 при наличии и иначе запускает CPU INT8.
-- Микрофон и разрешение Windows на его использование.
+### ╨Ч╨░╨│╤А╤Г╨╖╨║╨╕
 
-Драйвер NVIDIA требуется только для GPU-ускорения. Python, CUDA Toolkit и средства
-разработки на целевом ПК не нужны. Launcher пока не подписан.
+- [╨б╨║╨░╤З╨░╤В╤М CPU/CUDA ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡](https://github.com/AlexHDman/EXPC-WLK/releases)
+- [╨б╨║╨░╤З╨░╤В╤М ╨╝╨╛╨┤╨╡╨╗╤М small](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) тАФ ╤А╨╡╨║╨╛╨╝╨╡╨╜╨┤╤Г╨╡╤В╤Б╤П ╨┤╨╗╤П CPU
+- [╨б╨║╨░╤З╨░╤В╤М ╨╝╨╛╨┤╨╡╨╗╤М large-v3-turbo](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) тАФ ╤А╨╡╨║╨╛╨╝╨╡╨╜╨┤╤Г╨╡╤В╤Б╤П ╨┤╨╗╤П NVIDIA CUDA
 
-### Использование portable-версии
+╨Ю╨┐╤Г╨▒╨╗╨╕╨║╨╛╨▓╨░╨╜╨╜╤Л╨╡ model ZIP v0.9.2 ╨╜╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╤Л: ╤А╨░╤Б╨┐╨░╨║╤Г╨╣╤В╨╡
+╨▓╤Л╨▒╤А╨░╨╜╨╜╤Л╨╣ ╨░╤А╤Е╨╕╨▓ ╨▓ ╨║╨░╤В╨░╨╗╨╛╨│ ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╤П `WhisperKey`, ╨╛╨▒╤К╨╡╨┤╨╕╨╜╨╕╨▓ ╨╡╨│╨╛ ╨┐╨░╨┐╨║╤Г `models`.
+╨Х╤Б╨╗╨╕ ╨▓╤Л╨▒╤А╨░╨╜╨╜╨╛╨╣ ╨╝╨╛╨┤╨╡╨╗╨╕ ╨╜╨╡╤В, EXPC-WLK ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╕╤В ╤Б╨║╨░╤З╨░╤В╤М ╨╖╨░╨║╤А╨╡╨┐╨╗╤С╨╜╨╜╤Л╨╣ snapshot ╤Б
+Hugging Face, ╨┐╤А╨╛╨▓╨╡╤А╨╕╤В ╨╡╨│╨╛ ╨╕ ╤Г╤Б╤В╨░╨╜╨╛╨▓╨╕╤В ╨░╤В╨╛╨╝╨░╤А╨╜╨╛.
 
-### Загрузки для v0.9.2
+╨б╨║╨░╤З╨░╨╣╤В╨╡ ╨┐╨╛╨╗╨╜╤Л╨╣ ╨┐╨░╨║╨╡╤В ╨╕╨╖ GitHub Releases, ╤А╨░╤Б╨┐╨░╨║╤Г╨╣╤В╨╡ ╨╡╨│╨╛ ╨▓ ╨┤╨╛╤Б╤В╤Г╨┐╨╜╤Л╨╣ ╨┤╨╗╤П ╨╖╨░╨┐╨╕╤Б╨╕
+╨║╨░╤В╨░╨╗╨╛╨│, ╨╜╨░╨┐╤А╨╕╨╝╨╡╤А `D:\Portable\EXPC-WLK`, ╨╕ ╨╖╨░╨┐╤Г╤Б╤В╨╕╤В╨╡ `EXPC-WLK.exe`. ╨б╨╛╤Е╤А╨░╨╜╨╕╤В╨╡
+╤А╤П╨┤╨╛╨╝ ╨▓╨╡╤Б╤М ╨║╨░╤В╨░╨╗╨╛╨│ `WhisperKey`. ╨Я╤А╨╕ ╨┐╨╡╤А╨▓╨╛╨╝ ╨╕╤Б╨┐╨╛╨╗╤М╨╖╨╛╨▓╨░╨╜╨╕╨╕ ╨▓╤Л╨▒╤А╨░╨╜╨╜╨╛╨╣ ╨╝╨╛╨┤╨╡╨╗╨╕
+╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╕╤В ╤Б╨║╨░╤З╨░╤В╤М ╨╡╤С ╨╕╨╖ ╨╖╨░╨║╤А╨╡╨┐╨╗╤С╨╜╨╜╨╛╨╣ ╤А╨╡╨▓╨╕╨╖╨╕╨╕ Hugging Face. CPU/fallback
+╨┐╤А╨╡╨┤╨┐╨╛╤З╨╕╤В╨░╨╡╤В `small`, CUDA тАФ `large-v3-turbo`. ╨Я╨╛╨╗╨╜╤Л╨╣ snapshot ╨┐╤А╨╛╨▓╨╡╤А╤П╨╡╤В╤Б╤П ╨╕
+╨░╤В╨╛╨╝╨░╤А╨╜╨╛ ╤Г╤Б╤В╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╨╡╤В╤Б╤П ╨▓ `WhisperKey/models/<model-id>`. ╨Я╤А╨╛╨▓╨╡╤А╨╡╨╜╨╜╤Л╨╡ ╨╗╨╛╨║╨░╨╗╤М╨╜╤Л╨╡
+╨╝╨╛╨┤╨╡╨╗╨╕ ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╤О╤В╤Б╤П ╨▒╨╡╨╖ ╨╛╨▒╤А╨░╤Й╨╡╨╜╨╕╤П ╨║ cache. ╨Я╨╛╤Б╨╗╨╡ ╨╖╨░╨│╤А╤Г╨╖╨║╨╕ ╨┤╨╕╨║╤В╨╛╨▓╨║╨░ ╤А╨░╨▒╨╛╤В╨░╨╡╤В ╨▒╨╡╨╖ ╨╕╨╜╤В╨╡╤А╨╜╨╡╤В╨░. ╨Я╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╤А╨░╨▒╨╛╤В╨░╨╡╤В
+╨▓ ╤В╤А╨╡╨╡ ╨╕ ╨▒╨╗╨╛╨║╨╕╤А╤Г╨╡╤В ╨┤╤Г╨▒╨╗╨╕╨║╨░╤В╤Л.
 
-- [Скачать приложение](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-portable-v0.9.2.zip)
-- [Скачать модель small](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-small.zip) — рекомендуется для CPU
-- [Скачать модель large-v3-turbo](https://github.com/AlexHDman/EXPC-WLK/releases/download/v0.9.2/EXPC-WLK-model-large-v3-turbo.zip) — рекомендуется для NVIDIA CUDA
+╨Т ╤В╤А╨╡╨╡ ╨┐╨╛╨║╨░╨╖╨░╨╜╤Л ╨░╨║╤В╨╕╨▓╨╜╤Л╨╡ backend ╨╕ ╨╝╨╛╨┤╨╡╨╗╤М. ╨Ь╨╡╨╜╤О ╨╝╨╛╨┤╨╡╨╗╨╡╨╣ ╨┐╤А╨╡╨┤╨╛╤Б╤В╨░╨▓╨╗╤П╨╡╤В ╨┤╨╡╨╣╤Б╤В╨▓╨╕╤П
+╨б╨║╨░╤З╨░╤В╤М, ╨Т╤Л╨▒╤А╨░╤В╤М, ╨Я╤А╨╛╨▓╨╡╤А╨╕╤В╤М ╨╕ ╨г╨┤╨░╨╗╨╕╤В╤М. ╨Ю╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤П ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╤П ╤Б╨╛╤Е╤А╨░╨╜╤П╤О╤В
+`WhisperKey/models`. Development-╤Б╨▒╨╛╤А╨║╨╕ ╨╜╨╡ ╨┐╨╛╨┤╨┐╨╕╤Б╨░╨╜╤Л, ╨┐╨╛╤Н╤В╨╛╨╝╤Г Windows SmartScreen
+╨╝╨╛╨╢╨╡╤В ╨┐╨╛╨║╨░╨╖╨░╤В╤М ╨┐╤А╨╡╨┤╤Г╨┐╤А╨╡╨╢╨┤╨╡╨╜╨╕╨╡; ╨┐╤А╨╛╨▓╨╡╤А╤П╨╣╤В╨╡ ╤Б╨╛╤Б╨╡╨┤╨╜╨╕╨╣ SHA-256 ╨╕ ╤Б╨║╨░╤З╨╕╨▓╨░╨╣╤В╨╡ ╤В╨╛╨╗╤М╨║╨╛ ╨╕╨╖
+╨╛╤Д╨╕╤Ж╨╕╨░╨╗╤М╨╜╨╛╨│╨╛ ╤А╨╡╨┐╨╛╨╖╨╕╤В╨╛╤А╨╕╤П. ╨Э╨╡╨╛╨▒╤П╨╖╨░╤В╨╡╨╗╤М╨╜╨░╤П production-╨┐╨╛╨┤╨┐╨╕╤Б╤М ╨╛╨┐╨╕╤Б╨░╨╜╨░ ╨▓
+`docs/CODE_SIGNING.md`. ╨Х╤Б╨╗╨╕ ╨╝╨╕╨║╤А╨╛╤Д╨╛╨╜ ╨╛╤В╤Б╤Г╤В╤Б╤В╨▓╤Г╨╡╤В, ╨┐╤А╨╕ ╨╖╨░╨┐╤Г╤Б╨║╨╡ ╨▒╤Г╨┤╨╡╤В ╨┐╨╛╨║╨░╨╖╨░╨╜╨░
+╨╛╤И╨╕╨▒╨║╨░ input device; ╨┐╤А╨╛╨▓╨╡╤А╤М╤В╨╡ ╨┤╨╛╤Б╤В╤Г╨┐ ╨║ ╨╝╨╕╨║╤А╨╛╤Д╨╛╨╜╤Г ╨╕ ╨▓╤Л╨▒╤А╨░╨╜╨╜╤Л╨╣ ╨▓╤Е╨╛╨┤ Windows.
 
-Опубликованные model ZIP v0.9.2 необязательны: распакуйте
-выбранный архив в каталог приложения `WhisperKey`, объединив его папку `models`.
-Если выбранной модели нет, EXPC-WLK предложит скачать закреплённый snapshot с
-Hugging Face, проверит его и установит атомарно.
+╨Ш╤Б╤Е╨╛╨┤╨╜╤Л╨╣ ╤А╨╡╨┐╨╛╨╖╨╕╤В╨╛╤А╨╕╨╣ ╨╜╨░╨╝╨╡╤А╨╡╨╜╨╜╨╛ ╨╜╨╡ ╤Б╨╛╨┤╨╡╤А╨╢╨╕╤В Python runtime, ╤Б╤В╨╛╤А╨╛╨╜╨╜╨╕╨╡ ╨▒╨╕╨╜╨░╤А╨╜╤Л╨╡
+╨╖╨░╨▓╨╕╤Б╨╕╨╝╨╛╤Б╤В╨╕, CUDA/cuDNN, ╤Б╨╛╨▒╤А╨░╨╜╨╜╤Л╨╡ EXE ╨╕ ╨╝╨╛╨┤╨╡╨╗╤М. Runtime ╨╕ ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╨┐╨╛╤Б╤В╨░╨▓╨╗╤П╤О╤В╤Б╤П
+╨▓ portable ZIP GitHub Releases; ╨╝╨╛╨┤╨╡╨╗╤М ╨╖╨░╨│╤А╤Г╨╢╨░╨╡╤В╤Б╤П ╨╛╤В╨┤╨╡╨╗╤М╨╜╨╛ ╨╕╨╖ ╨╖╨░╨║╤А╨╡╨┐╨╗╤С╨╜╨╜╨╛╨│╨╛
+╨╕╤Б╤В╨╛╤З╨╜╨╕╨║╨░ Hugging Face.
 
-Скачайте полный пакет из GitHub Releases, распакуйте его в доступный для записи
-каталог, например `D:\Portable\EXPC-WLK`, и запустите `EXPC-WLK.exe`. Сохраните
-рядом весь каталог `WhisperKey`. При первом использовании выбранной модели
-приложение предложит скачать её из закреплённой ревизии Hugging Face. CPU/fallback
-предпочитает `small`, CUDA — `large-v3-turbo`. Полный snapshot проверяется и
-атомарно устанавливается в `WhisperKey/models/<model-id>`. Проверенные локальные
-модели используются без обращения к cache. После загрузки диктовка работает без интернета. Приложение работает
-в трее и блокирует дубликаты.
+### ╨Я╨╛╨╗╤М╨╖╨╛╨▓╨░╤В╨╡╨╗╤М╤Б╨║╨╕╨╡ ╨┤╨░╨╜╨╜╤Л╨╡
 
-В трее показаны активные backend и модель. Меню моделей предоставляет действия
-Скачать, Выбрать, Проверить и Удалить. Обновления приложения сохраняют
-`WhisperKey/models`. Development-сборки не подписаны, поэтому Windows SmartScreen
-может показать предупреждение; процесс будущей production-подписи описан в
-`docs/CODE_SIGNING.md`.
-
-Исходный репозиторий намеренно не содержит Python runtime, сторонние бинарные
-зависимости, CUDA/cuDNN, собранные EXE и модель. Runtime и приложение поставляются
-в portable ZIP GitHub Releases; модель загружается отдельно из закреплённого
-источника Hugging Face.
-
-### Пользовательские данные
-
-Настройки и локальные данные находятся вне каталога программы:
+╨Э╨░╤Б╤В╤А╨╛╨╣╨║╨╕ ╨╕ ╨╗╨╛╨║╨░╨╗╤М╨╜╤Л╨╡ ╨┤╨░╨╜╨╜╤Л╨╡ ╨╜╨░╤Е╨╛╨┤╤П╤В╤Б╤П ╨▓╨╜╨╡ ╨║╨░╤В╨░╨╗╨╛╨│╨░ ╨┐╤А╨╛╨│╤А╨░╨╝╨╝╤Л:
 
 ```text
 %APPDATA%\whisperkey\user_settings.yaml
@@ -183,37 +183,15 @@ Hugging Face, проверит его и установит атомарно.
 %APPDATA%\whisperkey\vocabulary.db
 ```
 
-Обновления не перезаписывают эти файлы. Язык интерфейса хранится в
-`system_tray.language` и не меняет словарь, hotwords или corrections.
+╨Ю╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤П ╨╜╨╡ ╨┐╨╡╤А╨╡╨╖╨░╨┐╨╕╤Б╤Л╨▓╨░╤О╤В ╤Н╤В╨╕ ╤Д╨░╨╣╨╗╤Л. ╨п╨╖╤Л╨║ ╨╕╨╜╤В╨╡╤А╤Д╨╡╨╣╤Б╨░ ╤Е╤А╨░╨╜╨╕╤В╤Б╤П ╨▓
+`system_tray.language` ╨╕ ╨╜╨╡ ╨╝╨╡╨╜╤П╨╡╤В ╤Б╨╗╨╛╨▓╨░╤А╤М, hotwords ╨╕╨╗╨╕ corrections.
 
-### Текущее состояние
+### ╨Ю╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡
 
-Текущий development release candidate — `0.9.3`. Проверены portable-запуск, CUDA и CPU STT, трей,
-автозапуск, Dynamic Vocabulary OFF/ON и локальные update-транзакции. Проверка на
-ноутбуке и реальное обновление 0.9.0 → 0.9.1 через GitHub ещё предстоят.
-
-### Модель обновления
-
-Проверка запускается вручную и не блокирует старт или STT. Принимаются только
-официальный заданный репозиторий, стабильная semantic version, точный release
-asset и SHA-256 от GitHub. Отдельный helper подготавливает полную новую версию,
-временно сохраняет предыдущую, ждёт состояния «Готов» и откатывает изменения при
-ошибке. Каталоги моделей и их installed metadata сохраняются независимо от
-обновления приложения. Подробности: [UPDATING.md](UPDATING.md).
-
-### План развития
-
-- Опубликовать и проверить первый полный portable-релиз GitHub.
-- Добавить подписанное подтверждение происхождения релизов после настройки подписи.
-- R2: опциональное обучение на явных исправлениях.
-- R3: контекстная посткоррекция.
-- R4: опциональный online resolver терминов.
-
-R2-R4 не входят в текущую версию.
-
-### Принцип разработки
-
-Сначала реализовать минимальное практическое offline-изменение, проверить его на
-реальном STT pipeline и измерить результат. Расширять только после подтверждения,
-сохраняя рабочую логику STT, GPU, hotwords, corrections и загрузки модели.
+╨Я╤А╨╛╨▓╨╡╤А╨║╨░ ╨╖╨░╨┐╤Г╤Б╨║╨░╨╡╤В╤Б╤П ╨▓╤А╤Г╤З╨╜╤Г╤О ╨╕ ╨╜╨╡ ╨▒╨╗╨╛╨║╨╕╤А╤Г╨╡╤В ╤Б╤В╨░╤А╤В ╨╕╨╗╨╕ STT. ╨Я╤А╨╕╨╜╨╕╨╝╨░╤О╤В╤Б╤П ╤В╨╛╨╗╤М╨║╨╛
+╨╛╤Д╨╕╤Ж╨╕╨░╨╗╤М╨╜╤Л╨╣ ╨╖╨░╨┤╨░╨╜╨╜╤Л╨╣ ╤А╨╡╨┐╨╛╨╖╨╕╤В╨╛╤А╨╕╨╣, ╤Б╤В╨░╨▒╨╕╨╗╤М╨╜╨░╤П semantic version, ╤В╨╛╤З╨╜╤Л╨╣ release
+asset ╨╕ SHA-256 ╨╛╤В GitHub. ╨Ю╤В╨┤╨╡╨╗╤М╨╜╤Л╨╣ helper ╨┐╨╛╨┤╨│╨╛╤В╨░╨▓╨╗╨╕╨▓╨░╨╡╤В ╨┐╨╛╨╗╨╜╤Г╤О ╨╜╨╛╨▓╤Г╤О ╨▓╨╡╤А╤Б╨╕╤О,
+╨▓╤А╨╡╨╝╨╡╨╜╨╜╨╛ ╤Б╨╛╤Е╤А╨░╨╜╤П╨╡╤В ╨┐╤А╨╡╨┤╤Л╨┤╤Г╤Й╤Г╤О, ╨╢╨┤╤С╤В ╤Б╨╛╤Б╤В╨╛╤П╨╜╨╕╤П ┬л╨У╨╛╤В╨╛╨▓┬╗ ╨╕ ╨╛╤В╨║╨░╤В╤Л╨▓╨░╨╡╤В ╨╕╨╖╨╝╨╡╨╜╨╡╨╜╨╕╤П ╨┐╤А╨╕
+╨╛╤И╨╕╨▒╨║╨╡. ╨Ъ╨░╤В╨░╨╗╨╛╨│╨╕ ╨╝╨╛╨┤╨╡╨╗╨╡╨╣ ╨╕ ╨╕╤Е installed metadata ╤Б╨╛╤Е╤А╨░╨╜╤П╤О╤В╤Б╤П ╨╜╨╡╨╖╨░╨▓╨╕╤Б╨╕╨╝╨╛ ╨╛╤В
+╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤П ╨┐╤А╨╕╨╗╨╛╨╢╨╡╨╜╨╕╤П. ╨Я╨╛╨┤╤А╨╛╨▒╨╜╨╛╤Б╤В╨╕: [UPDATING.md](UPDATING.md).
 

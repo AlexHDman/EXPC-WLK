@@ -15,7 +15,7 @@ remain their original names.
 `WhisperKey/config/release.json` is the canonical portable product version:
 
 ```json
-{"version":"0.9.3","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
+{"version":"1.0.0","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
 ```
 
 The existing upstream WhisperKey package metadata remains upstream metadata.
@@ -137,7 +137,7 @@ Do not restore all external backups. Access to X: still needs explicit approval.
 
 ## Scope of verification
 
-See LOCALIZATION_UPDATE_TEST_RESULTS.md. No real GitHub release was installed;
-GitHub metadata/package checks use controlled fixtures, and native installer
-success/rollback use small executable fixtures in paths with spaces. Current
-CUDA STT and R1 OFF/ON were tested separately with the bundled speech sample.
+Automated metadata/package checks use controlled fixtures, and native installer
+success/rollback use small executable fixtures in paths with spaces. CPU and
+CUDA STT plus Dynamic Vocabulary OFF/ON are also checked from clean extracted
+portable candidates with separate verified model assets.

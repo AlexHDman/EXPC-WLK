@@ -11,6 +11,12 @@ EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 - Embedded the existing multi-size product icon and VERSIONINFO in launcher/updater builds.
 - Added Authenticode signing-ready documentation and script without credentials.
 
+## [1.0.0] - Release candidate
+
+- Added a bundled CA certificate path for portable HTTPS model/update checks.
+- Completed CPU/CUDA, Dynamic Vocabulary, updater, tray, and portable regression coverage.
+- Polished concise Russian and English installation, hardware, warning, and update guidance.
+
 ## [0.9.6] - 2026-09-16
 
 - Fixed pystray model-menu callbacks and deterministic model-loading status exits.

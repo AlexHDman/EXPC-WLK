@@ -152,7 +152,7 @@ class TrayStatusTests(unittest.TestCase):
         self.assertTrue(all(len(inspect.signature(callback).parameters) <= 2 for callback in callbacks))
 
     def test_version_comes_from_canonical_release_metadata(self):
-        self.assertEqual(utils.get_version(), "0.9.6")
+        self.assertEqual(utils.get_version(), "1.0.0")
 
 
 if __name__ == "__main__":
