@@ -1,4 +1,5 @@
 import logging
+import inspect
 import sys
 import unittest
 from types import SimpleNamespace
@@ -8,6 +9,7 @@ from portable_boot import configure
 configure()
 from whisper_key import system_tray as ui  # noqa: E402 - configure DLL paths first
 from whisper_key import model_store  # noqa: E402
+from whisper_key import utils  # noqa: E402
 from whisper_key.platform.windows import icons  # noqa: E402
 
 
@@ -118,6 +120,39 @@ class TrayStatusTests(unittest.TestCase):
             ui.close_startup_status()
             constructor.return_value.stop.assert_called_once()
             self.assertIsNone(ui._startup_icon)
+
+    def test_complete_menu_builds_with_two_argument_model_callbacks(self):
+        self.tray.config_manager = SimpleNamespace(
+            get_setting=lambda section, key: {
+                ("clipboard", "auto_paste"): True,
+                ("whisper", "model"): "small",
+                ("voice_commands", "enabled"): True,
+            }[(section, key)]
+        )
+        self.state.get_application_state = lambda: {"model_loading": False}
+        self.state.get_available_audio_hosts = lambda: [{"name": "MME"}]
+        self.state.get_current_audio_host = lambda: "MME"
+        self.state.get_available_audio_devices = lambda host: [{"id": 1, "name": "Microphone"}]
+        self.state.get_current_audio_device_id = lambda: 1
+        self.tray.model_registry = object()
+
+        with patch.object(model_store, "model_status", side_effect=("valid", "missing")):
+            menu = ui.SystemTray._create_menu(self.tray)
+
+        callbacks = []
+        pending = list(menu)
+        while pending:
+            entry = pending.pop()
+            if entry.submenu is not None:
+                pending.extend(list(entry.submenu))
+            else:
+                callbacks.append(entry._action)
+
+        self.assertTrue(callbacks)
+        self.assertTrue(all(len(inspect.signature(callback).parameters) <= 2 for callback in callbacks))
+
+    def test_version_comes_from_canonical_release_metadata(self):
+        self.assertEqual(utils.get_version(), "0.9.6")
 
 
 if __name__ == "__main__":
