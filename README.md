@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="assets/github-header.png" width="100%" alt="WhisperKey WLK">
+</p>
 # EXPC-WLK
 
 English | [Русский](#русский)
@@ -213,3 +216,4 @@ R2-R4 не входят в текущую версию.
 Сначала реализовать минимальное практическое offline-изменение, проверить его на
 реальном STT pipeline и измерить результат. Расширять только после подтверждения,
 сохраняя рабочую логику STT, GPU, hotwords, corrections и загрузки модели.
+
