@@ -178,6 +178,50 @@ class ModelStoreTests(unittest.TestCase):
         self.assertNotEqual(refreshed["manifest_sha256"], "0" * 64)
         forbidden.assert_not_called()
 
+    def test_manual_copy_is_verified_registered_and_reused_in_both_modes(self):
+        for external in (False, True):
+            model_root = self.root / ("machine-models" if external else "models")
+            for model_id in ("small", "large-v3-turbo"):
+                target = model_root / model_id
+                target.mkdir(parents=True, exist_ok=True)
+                for name, content in self.payloads[model_id].items():
+                    (target / name).write_bytes(content)
+
+                result = model_store.verify_local_model(
+                    self.root, model_id, model_root=model_root if external else None)
+                self.assertEqual(result, {
+                    "status": "valid", "adopted": True, "missing_files": []})
+                self.assertTrue((target / model_store.METADATA_NAME).is_file())
+
+                forbidden = Mock(side_effect=AssertionError("network must not be used"))
+                reused = model_store.ensure_model(
+                    self.root, model_id, consent=forbidden, opener=forbidden,
+                    model_root=model_root if external else None)
+                self.assertEqual(reused, target.resolve())
+                forbidden.assert_not_called()
+
+    def test_local_verification_distinguishes_missing_and_corrupt(self):
+        for model_id in ("small", "large-v3-turbo"):
+            self.assertEqual(
+                model_store.verify_local_model(self.root, model_id)["status"], "missing")
+            target = self.root / "models" / model_id
+            target.mkdir(parents=True)
+            first_name, first_content = next(iter(self.payloads[model_id].items()))
+            (target / first_name).write_bytes(first_content)
+            self.assertEqual(
+                model_store.verify_local_model(self.root, model_id)["status"], "missing_files")
+            for name, content in self.payloads[model_id].items():
+                (target / name).write_bytes(content)
+            (target / first_name).write_bytes(b"x" * len(first_content))
+            self.assertEqual(
+                model_store.verify_local_model(self.root, model_id)["status"], "corrupt")
+
+    def test_clean_missing_model_enters_download_consent_path(self):
+        consent = Mock(return_value=False)
+        with self.assertRaisesRegex(RuntimeError, "cancelled"):
+            model_store.ensure_model(self.root, "small", consent=consent)
+        consent.assert_called_once()
+
     def test_invalid_revision_path_and_executable_rejected(self):
         model = self.catalog["models"]["small"]
         cases = (("revision", "latest"), ("directory", "../outside"))

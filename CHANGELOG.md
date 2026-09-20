@@ -3,13 +3,18 @@
 EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 `WhisperKey/config/release.json`.
 
-## [Unreleased]
+## [1.0.1] - Release candidate
 
 - Added clear backend/model tray status and CPU performance guidance.
 - Added local model Download, Select, Verify, and Remove controls.
 - Added privacy-safe diagnostics and a reproducible CPU/CUDA benchmark tool.
 - Embedded the existing multi-size product icon and VERSIONINFO in launcher/updater builds.
 - Added Authenticode signing-ready documentation and script without credentials.
+- Added verified adoption and offline reuse of compatible copied models.
+- Added pinned SHA-256 model verification and clearer model/update popups.
+- Added CUDA guard with CPU/small fallback for unsupported systems.
+- Added the fixed-audio STT performance benchmark to the tray menu.
+- Stabilized installed-mode paths and the deterministic updater Ready handshake.
 
 ## [1.0.0] - Release candidate
 

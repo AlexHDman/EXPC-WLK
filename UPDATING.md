@@ -15,7 +15,7 @@ remain their original names.
 `WhisperKey/config/release.json` is the canonical portable product version:
 
 ```json
-{"version":"1.0.0","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
+{"version":"1.0.1","repository":"AlexHDman/EXPC-WLK","asset_name":"EXPC-WLK-portable.zip"}
 ```
 
 The existing upstream WhisperKey package metadata remains upstream metadata.

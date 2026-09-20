@@ -1,4 +1,5 @@
 import logging
+import io
 import inspect
 import sys
 import unittest
@@ -26,6 +27,11 @@ class TrayStatusTests(unittest.TestCase):
         self.tray.is_running = True
         self.addCleanup(self.tray.stop)
         self.addCleanup(ui.close_startup_status)
+
+    @staticmethod
+    def _run_thread_now(*args, **kwargs):
+        target = kwargs["target"]
+        return SimpleNamespace(start=target)
 
     def test_ready_recording_processing_colors(self):
         for state in ("idle", "recording", "processing"):
@@ -151,8 +157,170 @@ class TrayStatusTests(unittest.TestCase):
         self.assertTrue(callbacks)
         self.assertTrue(all(len(inspect.signature(callback).parameters) <= 2 for callback in callbacks))
 
+    def test_update_up_to_date_uses_compact_popup(self):
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch("whisper_key.portable_updater.check_latest",
+                      return_value={"status": "up_to_date"}), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._check_updates()
+        popup.assert_called_once_with("Обновлений нет")
+
+    def test_update_available_has_download_and_later_actions(self):
+        result = {"status": "available", "version": "1.0.1", "size": 100}
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch("whisper_key.portable_updater.check_latest", return_value=result), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._check_updates()
+        call = popup.call_args
+        self.assertEqual(call.args[0], "Доступно обновление: 1.0.1")
+        self.assertEqual(call.kwargs["timeout"], 20)
+        self.assertEqual([button[0] for button in call.kwargs["buttons"]], ["Скачать", "Позже"])
+        self.assertTrue(call.kwargs["buttons"][0][1])
+        self.assertIsNone(call.kwargs["buttons"][1][1])
+
+    def test_update_download_popup_uses_real_bytes(self):
+        from whisper_key import portable_updater
+        result = {"url": "https://github.com/example/update.zip", "size": 4}
+        response = io.BytesIO(b"data")
+        handle = Mock()
+
+        def offer(*args):
+            request = SimpleNamespace(full_url=result["url"])
+            with portable_updater.urlopen(request) as stream:
+                stream.read()
+
+        with patch.object(portable_updater, "urlopen", return_value=response), \
+                patch.object(portable_updater, "offer_update", side_effect=offer), \
+                patch.object(self.tray, "_show_popup", return_value=handle):
+            self.tray._offer_update(result)
+        self.assertIn("100%", handle.update.call_args.args[0])
+        self.assertIn("МБ/с", handle.update.call_args.args[0])
+        handle.close.assert_called_once()
+
+    def test_verify_small_and_large_show_named_success(self):
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(model_store, "verify_local_model",
+                             return_value={"status": "valid", "adopted": False}), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._verify_model("small")
+            self.tray._verify_model("large-v3-turbo")
+        self.assertEqual([call.args[0] for call in popup.call_args_list], [
+            "Модель small исправна", "Модель large-v3-turbo исправна",
+        ])
+
+    def test_verify_model_corrupt_offers_redownload(self):
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(model_store, "verify_local_model",
+                             return_value={"status": "corrupt", "adopted": False}), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._verify_model("small")
+        call = popup.call_args
+        self.assertEqual(call.args[0], "Модель повреждена: small. Перекачать?")
+        self.assertEqual(call.kwargs["timeout"], 30)
+        self.assertEqual([item[0] for item in call.kwargs["buttons"]], ["Перекачать", "Позже"])
+
+    def test_verify_adopts_model_with_missing_metadata(self):
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(model_store, "verify_local_model",
+                             return_value={"status": "valid", "adopted": True}), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._verify_model("large-v3-turbo")
+        popup.assert_called_once_with("Модель large-v3-turbo найдена и подключена")
+
+    def test_cuda_model_allowed_when_nvidia_backend_is_available(self):
+        with patch("whisper_key.cuda_guard.probe", return_value=(True, None)), \
+                patch.object(self.state, "request_model_change", return_value=True,
+                             create=True) as change:
+            self.tray.config_manager = Mock()
+            self.tray._select_model("large-v3-turbo")
+        change.assert_called_once_with("large-v3-turbo")
+
+    def test_cuda_model_blocked_before_download_without_nvidia(self):
+        with patch("whisper_key.cuda_guard.probe",
+                   return_value=(False, "nvidia_gpu_unavailable")), \
+                patch.object(model_store, "model_status", return_value="missing"), \
+                patch.object(model_store, "ensure_model") as ensure, \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._download_model("large-v3-turbo")
+        ensure.assert_not_called()
+        self.assertIn("NVIDIA GPU", popup.call_args.args[0])
+        self.assertEqual(popup.call_args.kwargs["buttons"][0][0], "Установить small")
+
+    def test_cuda_model_blocked_when_runtime_is_unavailable(self):
+        with patch("whisper_key.cuda_guard.probe",
+                   return_value=(False, "cuda_backend_unavailable")), \
+                patch.object(model_store, "model_status", return_value="valid"), \
+                patch.object(self.tray, "_show_popup") as popup:
+            self.tray._select_model("large-v3-turbo")
+        self.assertEqual(popup.call_args.kwargs["buttons"][0][0], "Переключиться на small")
+
+    def test_small_fallback_action_selects_small(self):
+        with patch("whisper_key.cuda_guard.probe", return_value=(False, "no_gpu")), \
+                patch.object(model_store, "model_status", return_value="valid"), \
+                patch.object(self.tray, "_show_popup") as popup, \
+                patch.object(self.tray, "_select_model") as select:
+            self.tray._allow_cuda_model()
+            popup.call_args.kwargs["buttons"][0][1]()
+        select.assert_called_once_with("small")
+
+    def test_model_download_popup_uses_real_progress(self):
+        handle = Mock()
+        def ensure(*args, **kwargs):
+            kwargs["progress"](50, 100)
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(model_store, "ensure_model", side_effect=ensure), \
+                patch.object(self.tray, "_show_popup", side_effect=(handle, Mock())):
+            self.tray._download_model("small")
+        message = handle.update.call_args.args[0]
+        self.assertIn("50%", message)
+        self.assertIn("МБ/с", message)
+        self.assertIn("ETA", message)
+        handle.close.assert_called_once()
+
+    def test_benchmark_callback_shows_result_and_can_repeat(self):
+        from whisper_key import stt_benchmark
+        progress = Mock()
+        result = {"rtf": 0.5}
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(stt_benchmark, "run", return_value=result) as run, \
+                patch.object(stt_benchmark, "format_result", return_value="benchmark result"), \
+                patch.object(stt_benchmark, "save_result") as save, \
+                patch.object(self.tray, "_show_popup",
+                             side_effect=(progress, Mock(), progress, Mock())) as popup:
+            self.tray._run_benchmark()
+            self.tray._run_benchmark()
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(save.call_count, 2)
+        self.assertEqual([call.args[0] for call in popup.call_args_list[1::2]],
+                         ["benchmark result", "benchmark result"])
+
+    def test_missing_benchmark_model_requires_download_button(self):
+        from whisper_key import stt_benchmark
+        self.engine.model_key = "small"
+        progress = Mock()
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(stt_benchmark, "run",
+                             side_effect=stt_benchmark.ModelUnavailable("missing")), \
+                patch.object(self.tray, "_show_popup", side_effect=(progress, Mock())) as popup, \
+                patch.object(self.tray, "_download_model") as download:
+            self.tray._run_benchmark()
+            download.assert_not_called()
+            popup.call_args_list[1].kwargs["buttons"][0][1]()
+        download.assert_called_once_with("small")
+
+    def test_cuda_benchmark_uses_existing_guard(self):
+        from whisper_key import stt_benchmark
+        progress = Mock()
+        with patch.object(ui.threading, "Thread", side_effect=self._run_thread_now), \
+                patch.object(stt_benchmark, "run",
+                             side_effect=stt_benchmark.CudaUnavailable("cuda")), \
+                patch.object(self.tray, "_show_popup", return_value=progress), \
+                patch.object(self.tray, "_allow_cuda_model") as guard:
+            self.tray._run_benchmark()
+        guard.assert_called_once_with()
+
     def test_version_comes_from_canonical_release_metadata(self):
-        self.assertEqual(utils.get_version(), "1.0.0")
+        self.assertEqual(utils.get_version(), "1.0.1")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -11,6 +12,7 @@ sys.path.insert(0, str(ROOT / "WhisperKey/app"))
 import portable_boot  # noqa: E402
 
 portable_boot.configure()
+from whisper_key import cuda_guard  # noqa: E402
 
 
 class HardwareFallbackTests(unittest.TestCase):
@@ -82,9 +84,32 @@ class HardwareFallbackTests(unittest.TestCase):
 
     def test_forced_cuda_failure_is_reported(self):
         manager, whisper = self.config("cuda")
-        with patch("ctranslate2.get_cuda_device_count", return_value=0):
-            with self.assertRaisesRegex(RuntimeError, "NVIDIA CUDA"):
+        with patch("whisper_key.cuda_guard.probe", return_value=(False, "no_gpu")), patch(
+            "whisper_key.tray_popup.choose", return_value=1
+        ):
+            with self.assertRaisesRegex(RuntimeError, "NVIDIA GPU"):
                 self.main.run_gpu_onboarding(manager, whisper)
+
+    def test_forced_cuda_can_choose_persistent_small_cpu_fallback(self):
+        manager, whisper = self.config("cuda")
+        manager.update_user_setting = Mock()
+        with patch("whisper_key.cuda_guard.probe", return_value=(False, "no_gpu")), patch(
+            "whisper_key.model_store.model_status", return_value="valid"
+        ), patch("whisper_key.tray_popup.choose", return_value=0):
+            result = self.main.run_gpu_onboarding(manager, whisper)
+        self.assertEqual((result["device"], result["compute_type"], result["model"]),
+                         ("cpu", "int8", "small"))
+        manager.update_user_setting.assert_called_once_with("hardware", "mode", "cpu")
+
+    def test_cuda_probe_distinguishes_no_gpu_and_runtime_failure(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "ctranslate2.get_cuda_device_count", return_value=0
+        ):
+            self.assertEqual(cuda_guard.probe(temp), (False, "nvidia_gpu_unavailable"))
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "ctranslate2.get_cuda_device_count", return_value=1
+        ), patch("ctranslate2.get_supported_compute_types", side_effect=OSError("DLL")):
+            self.assertEqual(cuda_guard.probe(temp), (False, "cuda_backend_unavailable"))
 
 
 if __name__ == "__main__":

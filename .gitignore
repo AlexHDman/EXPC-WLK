@@ -19,6 +19,8 @@
 /WhisperKey/config/PortableVersion.generated.cs
 /build/
 /dist/
+/installer/work/
+/_restore096/
 /*.zip
 /*.7z
 

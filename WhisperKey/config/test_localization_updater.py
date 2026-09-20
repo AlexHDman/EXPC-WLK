@@ -111,7 +111,7 @@ class LocalizationTests(unittest.TestCase):
             self.tray.language = language
             menu = self.tray._create_menu()
             labels = {item.text for item in menu.items}
-            for key in ("autostart", "restart", "folder", "updates", "language", "exit", "log", "settings", "copy"):
+            for key in ("autostart", "restart", "folder", "updates", "benchmark", "language", "exit", "log", "settings", "copy"):
                 self.assertIn(i18n.text(key, language), labels)
             for state in ("idle", "recording", "initializing", "unavailable"):
                 self.assertEqual(
@@ -147,12 +147,13 @@ class LocalizationTests(unittest.TestCase):
 
     def test_offline_check_keeps_tray_running(self):
         self.tray.is_running = True
-        with patch.object(updater, "check_latest", side_effect=OSError("offline")):
+        with patch.object(updater, "check_latest", side_effect=OSError("offline")), \
+                patch.object(self.tray, "_show_popup") as popup:
             self.tray._check_updates()
             self.assertTrue(self.tray._update_lock.acquire(timeout=3))
             self.tray._update_lock.release()
         self.assertTrue(self.tray.is_running)
-        self.tray.icon.notify.assert_called_once()
+        popup.assert_called_once_with(self.tray._text("update_failed"), timeout=15)
 
     def test_autostart_still_reads_live_state(self):
         for language in ("ru", "en"):

@@ -71,16 +71,25 @@ def prepare_app():
 
         cuda_available = False
         if mode != 'cpu':
-            import ctranslate2
-            try:
-                cuda_available = (ctranslate2.get_cuda_device_count() > 0 and
-                                  'float16' in ctranslate2.get_supported_compute_types('cuda'))
-            except Exception:
-                cuda_available = False
+            from whisper_key.cuda_guard import probe
+            cuda_available, _ = probe(ROOT)
 
         if mode == 'cuda' and not cuda_available:
-            raise RuntimeError('NVIDIA CUDA GPU/driver unavailable. Install a compatible '
-                               'NVIDIA driver or set hardware.mode to auto/cpu.')
+            from whisper_key import tray_i18n, tray_popup
+            language = tray_i18n.startup_language()
+            from whisper_key.model_store import model_status
+            small_ready = model_status(ROOT, 'small', verify_hashes=True) == 'valid'
+            first = tray_i18n.text('switch_small' if small_ready else 'install_small', language)
+            choice = tray_popup.choose(
+                tray_i18n.text('cuda_unavailable', language),
+                [first, tray_i18n.text('cancel', language)])
+            if choice != 0:
+                raise RuntimeError(tray_i18n.text('cuda_unavailable', language))
+            mode = 'cpu'
+            update_setting = getattr(config_manager, 'update_user_setting', None)
+            if callable(update_setting):
+                update_setting('hardware', 'mode', 'cpu')
+            config_manager.config.setdefault('hardware', {})['mode'] = 'cpu'
 
         use_cuda = mode == 'cuda' or (mode == 'auto' and cuda_available)
         config['device'] = 'cuda' if use_cuda else 'cpu'

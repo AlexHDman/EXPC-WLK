@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "product": "EXPC-WLK",
+  "app_id": "{{2E801B1E-38AA-47AE-A9CC-AC43AB1E60BA}",
+  "version_source": "WhisperKey/config/release.json",
+  "icon_source": "assets/WLKMic.ico",
+  "install_root": "{autopf}/EXPC-WLK",
+  "user_data_root": "{userappdata}/whisperkey",
+  "model_root": "{commonappdata}/EXPC-WLK/Models",
+  "download_models_during_install": false,
+  "payload": [
+    "EXPC-WLK.exe",
+    "runtime",
+    "app",
+    "updater"
+  ],
+  "profiles": {
+    "cpu": "EXPC-WLK-portable-CPU-v{version}.zip",
+    "cuda": "EXPC-WLK-portable-CUDA-v{version}.zip"
+  },
+  "upgrade": {
+    "preserve_user_data": true,
+    "preserve_models": true
+  },
+  "uninstall": {
+    "keep_user_data_and_models_by_default": true,
+    "offer_full_cleanup": true
+  }
+}
