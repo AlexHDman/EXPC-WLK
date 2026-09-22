@@ -51,7 +51,8 @@ try {
     $packageSource = Join-Path $repoRoot 'WhisperKey\app\site-packages\whisper_key'
     $packageTarget = Join-Path $stage 'app\site-packages\whisper_key'
     foreach ($name in @('diagnostics.py', 'model_store.py', 'portable_tray_actions.py',
-                         'system_tray.py', 'utils.py', 'installed_updater.py')) {
+                         'system_tray.py', 'utils.py', 'installed_updater.py',
+                         'model_import.py', 'tray_i18n.py', 'tray_popup.py')) {
         Copy-Item -LiteralPath (Join-Path $packageSource $name) -Destination $packageTarget
     }
 

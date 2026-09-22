@@ -3,13 +3,13 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$installer = (Resolve-Path (Join-Path $repoRoot 'dist\installer\1.0.0\EXPC-WLK-Setup-CUDA-v1.0.0.exe')).Path
-$stage101 = (Resolve-Path (Join-Path $repoRoot 'installer\work\stage-cuda-1.0.1')).Path
+$installer = (Resolve-Path (Join-Path $repoRoot 'dist\installer\1.0.2\EXPC-WLK-Setup-CUDA-v1.0.2.exe')).Path
+$stage102 = (Resolve-Path (Join-Path $repoRoot 'installer\work\stage-cuda-1.0.2')).Path
 $installRoot = Join-Path $env:ProgramFiles 'EXPC-WLK'
 $userData = Join-Path $env:APPDATA 'whisperkey'
 $programDataRoot = Join-Path $env:PROGRAMDATA 'EXPC-WLK'
 $models = Join-Path $programDataRoot 'Models'
-$work = Join-Path $repoRoot 'installer\work\cuda-live-smoke'
+$work = Join-Path $repoRoot 'installer\work\live-smoke-1.0.2-cuda'
 $backup = Join-Path $work 'backup'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $checks = [Collections.Generic.List[string]]::new()
@@ -48,7 +48,7 @@ function Invoke-Update([string[]]$ExtraArgs, [int]$Expected, [string]$ReceiptCas
     $helper = Join-Path $work ("InstalledUpdater-$token.exe")
     Copy-Item -LiteralPath (Join-Path $installRoot 'updater\InstalledUpdater.exe') -Destination $helper
     $arguments = @(
-        ('"' + $installRoot + '"'), ('"' + $stage101 + '"'), ('"' + $receipt + '"'),
+        ('"' + $installRoot + '"'), ('"' + $stage102 + '"'), ('"' + $receipt + '"'),
         '0', '0', $token, '--quiet', '--keep-stage', '--test-instance'
     ) + $ExtraArgs
     Run-Process $helper $arguments $Expected
@@ -56,7 +56,6 @@ function Invoke-Update([string[]]$ExtraArgs, [int]$Expected, [string]$ReceiptCas
 }
 
 if (Test-Path -LiteralPath $installRoot) { throw 'Install root already exists' }
-if (Test-Path -LiteralPath $programDataRoot) { throw 'ProgramData test root already exists' }
 if (Test-Path -LiteralPath $work) { throw 'CUDA smoke work directory already exists' }
 New-Item -ItemType Directory -Path $backup -Force | Out-Null
 $portableWasRunning = [bool](Get-CimInstance Win32_Process | Where-Object {
@@ -65,8 +64,15 @@ $portableWasRunning = [bool](Get-CimInstance Win32_Process | Where-Object {
 })
 $originalUserData = Test-Path -LiteralPath $userData
 if ($originalUserData) { Copy-Item -LiteralPath $userData -Destination (Join-Path $backup 'user-data') -Recurse }
+$originalProgramData = Test-Path -LiteralPath $programDataRoot
+if ($originalProgramData) {
+    Copy-Item -LiteralPath $programDataRoot -Destination (Join-Path $backup 'program-data') -Recurse
+}
 $originalRunValue = $null
 try { $originalRunValue = Get-ItemPropertyValue -LiteralPath $runKey -Name 'EXPC-WLK' } catch {}
+
+if (Test-Path -LiteralPath $userData) { Remove-Item -LiteralPath $userData -Recurse -Force }
+if (Test-Path -LiteralPath $programDataRoot) { Remove-Item -LiteralPath $programDataRoot -Recurse -Force }
 
 try {
     New-Item -ItemType Directory -Path $userData -Force | Out-Null
@@ -79,8 +85,13 @@ try {
     $runValue = Get-ItemPropertyValue -LiteralPath $runKey -Name 'EXPC-WLK'
     Assert-True ($runValue -eq ('"' + (Join-Path $installRoot 'EXPC-WLK.exe') + '"')) 'optional autostart'
 
-    Copy-Item -LiteralPath (Join-Path $repoRoot 'WhisperKey\models\large-v3-turbo') `
-        -Destination (Join-Path $models 'large-v3-turbo') -Recurse
+    $import = & (Join-Path $installRoot 'runtime\python.exe') -I `
+        (Join-Path $repoRoot 'installer\tests\installed_model_import_smoke.py') `
+        --metadata-root (Join-Path $installRoot 'updater') --model-root $models `
+        --source (Join-Path $repoRoot 'WhisperKey\models\large-v3-turbo') `
+        --model large-v3-turbo | ConvertFrom-Json
+    Assert-True ($import.status -eq 'valid' -and $import.copied -and
+        $import.source_unchanged -and $import.metadata) 'offline large-v3-turbo import'
     $modelFile = Join-Path $models 'large-v3-turbo\model.bin'
     $modelHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $modelFile).Hash
     $selftest = & (Join-Path $installRoot 'runtime\python.exe') -I `
@@ -122,15 +133,15 @@ try {
     Stop-Tree $installRoot
 
     $null = Invoke-Update @() 0
-    $release101 = Get-Content -LiteralPath (Join-Path $installRoot 'updater\config\release.json') -Raw | ConvertFrom-Json
-    Assert-True ($release101.version -eq '1.0.1') 'installed update v1.0.0 to v1.0.1'
-    Assert-True ((Get-Item (Join-Path $installRoot 'EXPC-WLK.exe')).VersionInfo.FileVersion -eq '1.0.1.0') 'updated launcher version'
+    $release102 = Get-Content -LiteralPath (Join-Path $installRoot 'updater\config\release.json') -Raw | ConvertFrom-Json
+    Assert-True ($release102.version -eq '1.0.2') 'installed update transaction v1.0.2'
+    Assert-True ((Get-Item (Join-Path $installRoot 'EXPC-WLK.exe')).VersionInfo.FileVersion -eq '1.0.2.0') 'updated launcher version'
     Assert-True (Test-Path -LiteralPath $marker) 'updater preserves AppData settings'
     Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $modelFile).Hash -eq $modelHash) 'updater preserves ProgramData model'
     $registeredVersion = Get-ItemPropertyValue `
         'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{2E801B1E-38AA-47AE-A9CC-AC43AB1E60BA}_is1' `
         -Name DisplayVersion
-    Assert-True ($registeredVersion -eq '1.0.1') 'Apps and Features version updated'
+    Assert-True ($registeredVersion -eq '1.0.2') 'Apps and Features version updated'
     Stop-Tree $installRoot
 
     $beforeRollback = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $installRoot 'EXPC-WLK.exe')).Hash
@@ -149,7 +160,7 @@ try {
     $null = Invoke-Update @('--simulate-failure') 1
     $afterRollback = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $installRoot 'EXPC-WLK.exe')).Hash
     $releaseAfterRollback = Get-Content -LiteralPath (Join-Path $installRoot 'updater\config\release.json') -Raw | ConvertFrom-Json
-    Assert-True ($beforeRollback -eq $afterRollback -and $releaseAfterRollback.version -eq '1.0.1') 'post-swap rollback restores application'
+    Assert-True ($beforeRollback -eq $afterRollback -and $releaseAfterRollback.version -eq '1.0.2') 'post-swap rollback restores application'
     Assert-True (Test-Path -LiteralPath $marker) 'rollback preserves AppData settings'
     Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $modelFile).Hash -eq $modelHash) 'rollback preserves ProgramData model'
 
@@ -177,9 +188,19 @@ try {
     }
     if (Test-Path -LiteralPath $userData) { Remove-Item -LiteralPath $userData -Recurse -Force }
     if ($originalUserData) { Copy-Item -LiteralPath (Join-Path $backup 'user-data') -Destination $userData -Recurse }
-    if (Test-Path -LiteralPath $programDataRoot) {
-        Write-Warning "ProgramData cleanup residue remains: $programDataRoot"
-    }
+    try {
+        if (Test-Path -LiteralPath $programDataRoot) {
+            Get-ChildItem -LiteralPath $programDataRoot -Force | Remove-Item -Recurse -Force
+        }
+        if ($originalProgramData) {
+            New-Item -ItemType Directory -Path $programDataRoot -Force | Out-Null
+            Get-ChildItem -LiteralPath (Join-Path $backup 'program-data') -Force | ForEach-Object {
+                Copy-Item -LiteralPath $_.FullName -Destination $programDataRoot -Recurse -Force
+            }
+        } elseif (Test-Path -LiteralPath $programDataRoot) {
+            Remove-Item -LiteralPath $programDataRoot -Force
+        }
+    } catch { Write-Warning "ProgramData restore failed: $_" }
     if ($null -ne $originalRunValue) {
         New-Item -Path $runKey -Force | Out-Null
         Set-ItemProperty -LiteralPath $runKey -Name 'EXPC-WLK' -Value $originalRunValue

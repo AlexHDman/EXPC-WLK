@@ -5,10 +5,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$version = '1.0.0'
+$version = '1.0.1'
 $profileUpper = $Profile.ToUpperInvariant()
 $installer = Join-Path $repoRoot "dist\installer\$version\EXPC-WLK-Setup-$profileUpper-v$version.exe"
-$stage = Join-Path $repoRoot "installer\work\stage-$Profile-1.0.1"
+$stage = Join-Path $repoRoot "installer\work\stage-$Profile-1.0.2"
 $root = Join-Path $env:ProgramFiles 'EXPC-WLK'
 $userData = Join-Path $env:APPDATA 'whisperkey'
 $modelName = if ($Profile -eq 'cpu') { 'small' } else { 'large-v3-turbo' }
@@ -81,7 +81,7 @@ try {
 
     Update @() 0
     $release = Get-Content (Join-Path $root 'updater\config\release.json') -Raw | ConvertFrom-Json
-    Assert-True ($release.version -eq '1.0.1') "$profileUpper v1.0.0 to v1.0.1 commit"
+    Assert-True ($release.version -eq '1.0.2') "$profileUpper v1.0.1 to v1.0.2 commit"
     $stableHash = (Get-FileHash -Algorithm SHA256 (Join-Path $root 'EXPC-WLK.exe')).Hash
 
     Update @() 2 'invalid'

@@ -113,8 +113,39 @@ def prepare_app(ready_handshake=None):
 
     def model_source(self, key):
         if key in local_models:
-            from whisper_key.model_store import ensure_model
-            return str(ensure_model(METADATA_ROOT, key, model_root=models))
+            from whisper_key import model_import, model_store, tray_i18n, tray_popup
+            verified = model_store.verify_local_model(
+                METADATA_ROOT, key, model_root=models)
+            if verified["status"] == "valid":
+                return str(models / model_store.manifest_for(METADATA_ROOT, key)["directory"])
+            language = tray_i18n.startup_language()
+            while True:
+                choice = tray_popup.choose(
+                    tray_i18n.text("first_run_model", language).format(model=key),
+                    [tray_i18n.text("use_existing_model", language),
+                     tray_i18n.text("download", language),
+                     tray_i18n.text("cancel", language)],
+                )
+                if choice == 0:
+                    source = model_import.choose_folder(
+                        tray_i18n.text("import_select_folder", language))
+                    if source is None:
+                        continue
+                    try:
+                        result = model_import.import_selected(
+                            METADATA_ROOT, models, source, preferred_model=key,
+                            require_preferred=True)
+                        return str(result["path"])
+                    except model_import.ModelImportError as error:
+                        tray_popup.choose(
+                            tray_i18n.text("import_failed", language).format(error=error),
+                            ["OK"])
+                        continue
+                if choice == 1:
+                    return str(model_store.ensure_model(
+                        METADATA_ROOT, key, consent=lambda manifest, files: True,
+                        model_root=models))
+                raise RuntimeError("Model setup cancelled / Настройка модели отменена.")
         raise ValueError("Unsupported installed model: " + str(key))
 
     def model_cached(self, key):

@@ -24,7 +24,12 @@ Assert-True ($layout.profiles.cpu -match 'CPU') 'CPU profile mapping'
 Assert-True ($layout.profiles.cuda -match 'CUDA') 'CUDA profile mapping'
 Assert-True (Test-Path -LiteralPath (Join-Path $repoRoot 'assets\WLKMic.ico')) 'Installer icon exists'
 Assert-True ($iss.Contains('Flags: unchecked') -and $iss.Contains('desktopicon')) 'Optional Desktop shortcut'
-Assert-True ($iss.Contains("WizardIsTaskSelected('autostart')")) 'Optional autostart reconciliation'
+Assert-True ($iss.Contains('runasoriginaluser') -and
+             $iss.Contains('--enable-autostart --quiet') -and
+             $iss.Contains('--disable-autostart --quiet')) 'Original-user HKCU autostart reconciliation'
+Assert-True ($iss.Contains('LanguageDetectionMethod=uilanguage') -and
+             $iss.Contains('Languages\Russian.isl') -and
+             $iss.Contains('ShowLanguageDialog=no')) 'Windows UI language auto-detection'
 Assert-True ($iss.Contains('Check: FullCleanupSelected')) 'Optional full cleanup'
 Assert-True ($iss.Contains('{commonappdata}\EXPC-WLK\Models')) 'ProgramData model directory'
 Assert-True (-not $iss.Contains('DownloadTemporaryFile')) 'No installer model download code'

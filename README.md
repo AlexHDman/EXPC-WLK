@@ -80,6 +80,22 @@ binary dependencies, CUDA/cuDNN libraries, built EXEs, and model. Those large
 runtime artifacts belong in the portable ZIP attached to a GitHub Release.
 The model is distributed separately from its pinned Hugging Face source.
 
+### Installed mode
+
+The installer keeps application files under `%ProgramFiles%\EXPC-WLK`, settings
+under `%APPDATA%\whisperkey`, and verified models under
+`%ProgramData%\EXPC-WLK\Models`. Models and settings survive normal upgrade and
+uninstall; `/FULLCLEANUP` removes them explicitly. Normal users receive Modify
+access to the model directory.
+
+Fresh configurations use push-to-talk: hold `Ctrl+Win` to record and release it
+to stop immediately and start transcription. The installer and first tray launch
+follow the Windows UI language (Russian for Russian Windows, English otherwise).
+Installed mode offers **Import existing model**: select a model directory, an
+EXPC-WLK Portable directory, or another installed `Models` directory. EXPC-WLK
+validates every pinned size and SHA-256, copies the model without deleting the
+source, registers it, and then works offline.
+
 ### User data
 
 User settings and local data remain outside the application folder:
@@ -172,6 +188,23 @@ Hugging Face, проверит его и установит атомарно.
 зависимости, CUDA/cuDNN, собранные EXE и модель. Runtime и приложение поставляются
 в portable ZIP GitHub Releases; модель загружается отдельно из закреплённого
 источника Hugging Face.
+
+### Установленная версия
+
+Installer размещает файлы приложения в `%ProgramFiles%\EXPC-WLK`, настройки —
+в `%APPDATA%\whisperkey`, а проверенные модели — в
+`%ProgramData%\EXPC-WLK\Models`. При обычном обновлении и удалении модели и
+настройки сохраняются; `/FULLCLEANUP` удаляет их явно. Обычный пользователь имеет
+право Modify на каталог моделей.
+
+В новой конфигурации по умолчанию используется push-to-talk: удерживайте
+`Ctrl+Win` для записи и отпустите сочетание, чтобы сразу остановить запись и
+начать распознавание. Installer и первый запуск tray выбирают язык интерфейса по
+языку Windows: русский для русской Windows, иначе английский. В установленной
+версии доступно действие **Импортировать существующую модель**. Можно выбрать
+папку модели, каталог EXPC-WLK Portable или другой установленный каталог
+`Models`. EXPC-WLK проверит размеры и SHA-256, скопирует модель без удаления
+источника, зарегистрирует её и сможет использовать offline.
 
 ### Пользовательские данные
 

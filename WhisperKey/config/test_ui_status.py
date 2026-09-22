@@ -320,7 +320,7 @@ class TrayStatusTests(unittest.TestCase):
         guard.assert_called_once_with()
 
     def test_version_comes_from_canonical_release_metadata(self):
-        self.assertEqual(utils.get_version(), "1.0.1")
+        self.assertEqual(utils.get_version(), "1.0.2")
 
 
 if __name__ == "__main__":

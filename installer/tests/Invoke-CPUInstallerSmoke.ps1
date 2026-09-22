@@ -1,17 +1,17 @@
 [CmdletBinding()]
 param(
-    [string]$InstallerPath = 'dist\installer\1.0.0\EXPC-WLK-Setup-CPU-v1.0.0.exe'
+    [string]$InstallerPath = 'dist\installer\1.0.2\EXPC-WLK-Setup-CPU-v1.0.2.exe'
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $installer = (Resolve-Path -LiteralPath (Join-Path $repoRoot $InstallerPath)).Path
-$stage101 = (Resolve-Path (Join-Path $repoRoot 'installer\work\stage-cpu-1.0.1')).Path
+$stage102 = (Resolve-Path (Join-Path $repoRoot 'installer\work\stage-cpu-1.0.2')).Path
 $installRoot = Join-Path $env:ProgramFiles 'EXPC-WLK'
 $userData = Join-Path $env:APPDATA 'whisperkey'
 $programDataRoot = Join-Path $env:PROGRAMDATA 'EXPC-WLK'
 $models = Join-Path $programDataRoot 'Models'
-$work = Join-Path $repoRoot 'installer\work\live-smoke'
+$work = Join-Path $repoRoot 'installer\work\live-smoke-1.0.2-cpu'
 $backup = Join-Path $work 'backup'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $valueName = 'EXPC-WLK'
@@ -34,7 +34,7 @@ function Invoke-Update {
     $helper = Join-Path $work ("InstalledUpdater-$token.exe")
     Copy-Item -LiteralPath (Join-Path $installRoot 'updater\InstalledUpdater.exe') -Destination $helper
     Run-Process $helper @(
-        ('"' + $installRoot + '"'), ('"' + $stage101 + '"'), ('"' + $receipt + '"'),
+        ('"' + $installRoot + '"'), ('"' + $stage102 + '"'), ('"' + $receipt + '"'),
         '0', '0', $token, '--quiet', '--keep-stage', '--test-instance'
     )
 }
@@ -75,6 +75,9 @@ if ($originalProgramData) {
     (@{ user_data=$originalUserData; program_data=$originalProgramData;
         run_value=$originalRunValue } | ConvertTo-Json))
 
+if (Test-Path -LiteralPath $userData) { Remove-Item -LiteralPath $userData -Recurse -Force }
+if (Test-Path -LiteralPath $programDataRoot) { Remove-Item -LiteralPath $programDataRoot -Recurse -Force }
+
 try {
     New-Item -ItemType Directory -Path $userData -Force | Out-Null
     $marker = Join-Path $userData '.installer-phase2-preserve'
@@ -97,8 +100,12 @@ try {
     }
     Assert-True ([bool]$usersModify) 'normal Users have Modify permission on ProgramData models'
 
-    Copy-Item -LiteralPath (Join-Path $repoRoot 'WhisperKey\models\small') `
-        -Destination (Join-Path $models 'small') -Recurse
+    $import = & (Join-Path $installRoot 'runtime\python.exe') -I `
+        (Join-Path $repoRoot 'installer\tests\installed_model_import_smoke.py') `
+        --metadata-root (Join-Path $installRoot 'updater') --model-root $models `
+        --source (Join-Path $repoRoot 'WhisperKey\models\small') --model small | ConvertFrom-Json
+    Assert-True ($import.status -eq 'valid' -and $import.copied -and
+        $import.source_unchanged -and $import.metadata) 'offline small model import'
     $selftest = & (Join-Path $installRoot 'runtime\python.exe') -I `
         (Join-Path $installRoot 'app\installed_boot.py') --selftest | ConvertFrom-Json
     Assert-True ($selftest.mode -eq 'installed') 'installed bootstrap mode'
@@ -136,6 +143,8 @@ try {
     Assert-True ($ready.format -eq 1 -and $ready.state -eq 'ready' -and
         $ready.token -eq $readyToken) 'CPU structured Ready state'
     Remove-Item -LiteralPath $readyReceipt -Force
+    Assert-True ((Get-Content -LiteralPath (Join-Path $userData 'user_settings.yaml') -Raw) -match
+        'recording_mode:\s*push_to_talk') 'fresh installed config defaults to push-to-talk'
     Stop-EXPCProcesses $installRoot
     Start-Sleep -Seconds 1
 
@@ -150,8 +159,8 @@ try {
     Start-Sleep -Seconds 1
 
     Invoke-Update
-    $release101 = Get-Content -LiteralPath (Join-Path $installRoot 'updater\config\release.json') -Raw | ConvertFrom-Json
-    Assert-True ($release101.version -eq '1.0.1') 'CPU installed update v1.0.0 to v1.0.1'
+    $release102 = Get-Content -LiteralPath (Join-Path $installRoot 'updater\config\release.json') -Raw | ConvertFrom-Json
+    Assert-True ($release102.version -eq '1.0.2') 'CPU installed update transaction v1.0.2'
     Assert-True (Test-Path -LiteralPath $marker) 'CPU updater preserves AppData settings'
     Assert-True (Test-Path -LiteralPath (Join-Path $models 'small\model.bin')) 'CPU updater preserves ProgramData model'
     Stop-EXPCProcesses $installRoot
@@ -169,6 +178,9 @@ try {
 
     Run-Process $installer @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS=',
         "/LOG=$(Join-Path $work 'cleanup-install.log')")
+    $uncheckedRunValue = $null
+    try { $uncheckedRunValue = Get-ItemPropertyValue -LiteralPath $runKey -Name $valueName } catch {}
+    Assert-True ($null -eq $uncheckedRunValue) 'unchecked setup removes autostart'
     Run-Process (Find-Uninstaller) @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/FULLCLEANUP')
     Assert-True (-not (Test-Path -LiteralPath $installRoot)) 'full-cleanup uninstall removes application'
     Assert-True (-not (Test-Path -LiteralPath $userData)) 'full cleanup removes settings'

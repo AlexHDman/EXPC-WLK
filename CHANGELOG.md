@@ -3,6 +3,14 @@
 EXPC-WLK uses semantic versioning. The canonical portable version is stored in
 `WhisperKey/config/release.json`.
 
+## [1.0.2] - Stabilization candidate
+
+- Made hold `Ctrl+Win` push-to-talk the hard default for every fresh user configuration.
+- Fixed installer autostart by reconciling HKCU Run as the original Windows user.
+- Added automatic Russian/English installer language selection from Windows UI language.
+- Added verified offline import of existing `small` and `large-v3-turbo` model directories.
+- Documented installed model storage and prepared light EXPC installer branding.
+
 ## [1.0.1] - Release candidate
 
 - Added clear backend/model tray status and CPU performance guidance.

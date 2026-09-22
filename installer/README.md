@@ -1,7 +1,7 @@
-# EXPC-WLK installer architecture (Phase 1)
+# EXPC-WLK installer architecture
 
-This folder defines the installed-mode contract for EXPC-WLK v1.x. It does not
-alter or rebuild the v1.0.0 portable release.
+This folder defines the installed-mode contract for EXPC-WLK v1.x without
+changing the portable path contract.
 
 ## Technology
 
@@ -45,6 +45,10 @@ must match the requested profile.
 - Setup never deletes or replaces `%APPDATA%\whisperkey` or the model directory.
 - Start Menu shortcut is always installed; Desktop and per-user autostart are
   optional tasks.
+- Autostart is reconciled through the installed launcher as the original user,
+  so the HKCU Run value points to `%ProgramFiles%\EXPC-WLK\EXPC-WLK.exe`.
+- Installer language follows the Windows UI language: Russian for Russian UI,
+  English otherwise. Existing application language settings remain authoritative.
 - Uninstall keeps settings and models by default. A separate confirmation allows
   full cleanup.
 
@@ -56,10 +60,14 @@ starts from the checksum-verified CPU portable archive, flattens `runtime` and
 files out of the payload. `Build-Installer.ps1` rejects a stage without the
 installed bootstrap or with a root model directory.
 
-The CPU installer has a repeatable live smoke test covering install, launch,
+The CPU and CUDA installers have repeatable live smoke tests covering install, launch,
 ProgramData model discovery and ACLs, AppData settings, shortcuts, autostart,
 in-place upgrade, keep-data uninstall, and `/FULLCLEANUP` uninstall. CUDA is not
 built in Phase 2. The installed updater directory currently carries trusted
 metadata only; an installed-mode update transaction is a later phase.
 
-No installer is published by this phase.
+Installed first-run and tray UI can import an existing `small` or
+`large-v3-turbo` directory from a portable copy, another installed model root,
+or an arbitrary local/removable path. Import verifies the pinned manifest and
+SHA-256 offline, copies atomically, leaves the source untouched, and registers
+the destination under `%ProgramData%\EXPC-WLK\Models`.

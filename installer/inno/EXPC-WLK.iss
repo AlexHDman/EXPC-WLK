@@ -15,14 +15,20 @@
 #endif
 
 #define ProductName "EXPC-WLK"
+#define ProductDisplayName "EXPC WhisperKey Local (EXPC-WLK)"
 #define ProductExe "EXPC-WLK.exe"
 #define ProductAppId "{{2E801B1E-38AA-47AE-A9CC-AC43AB1E60BA}"
 
 [Setup]
 AppId={#ProductAppId}
-AppName={#ProductName}
+AppName={#ProductDisplayName}
 AppVersion={#AppVersion}
-AppVerName={#ProductName} {#AppVersion} ({#Profile})
+AppVerName={#ProductDisplayName} {#AppVersion} ({#Profile})
+AppPublisher=EXPC
+AppPublisherURL=https://github.com/AlexHDman/EXPC-WLK
+VersionInfoCompany=EXPC
+VersionInfoDescription=EXPC WhisperKey Local Installer
+VersionInfoProductName=EXPC-WLK
 DefaultDirName={autopf}\EXPC-WLK
 DefaultGroupName=EXPC-WLK
 DisableProgramGroupPage=yes
@@ -37,14 +43,33 @@ OutputBaseFilename=EXPC-WLK-Setup-{#ProfileLabel}-v{#AppVersion}
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
+DisableWelcomePage=no
+ShowLanguageDialog=no
+LanguageDetectionMethod=uilanguage
 CloseApplications=yes
 RestartApplications=no
 UsePreviousAppDir=yes
 UsePreviousTasks=yes
 
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+
+[CustomMessages]
+english.AdditionalShortcuts=Additional shortcuts:
+russian.AdditionalShortcuts=Дополнительные ярлыки:
+english.DesktopTask=Create a Desktop shortcut
+russian.DesktopTask=Создать ярлык на рабочем столе
+english.StartupGroup=Startup:
+russian.StartupGroup=Автозапуск:
+english.AutostartTask=Start EXPC-WLK with Windows
+russian.AutostartTask=Запускать EXPC-WLK вместе с Windows
+english.KeepDataPrompt=Keep EXPC-WLK user settings and downloaded models?%n%nChoose Yes to keep them (recommended).%nChoose No to remove all settings and models.%n%nDesign by EXPC
+russian.KeepDataPrompt=Сохранить настройки EXPC-WLK и загруженные модели?%n%nНажмите «Да», чтобы сохранить их (рекомендуется).%nНажмите «Нет», чтобы удалить настройки и модели.%n%nDesign by EXPC
+
 [Tasks]
-Name: "desktopicon"; Description: "Create a Desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
-Name: "autostart"; Description: "Start EXPC-WLK with Windows"; GroupDescription: "Startup:"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:DesktopTask}"; GroupDescription: "{cm:AdditionalShortcuts}"; Flags: unchecked
+Name: "autostart"; Description: "{cm:AutostartTask}"; GroupDescription: "{cm:StartupGroup}"; Flags: unchecked
 
 [Dirs]
 Name: "{userappdata}\whisperkey"
@@ -59,6 +84,10 @@ Source: "{#SourceDir}\updater\*"; DestDir: "{app}\updater"; Flags: ignoreversion
 [Icons]
 Name: "{group}\EXPC-WLK"; Filename: "{app}\{#ProductExe}"
 Name: "{autodesktop}\EXPC-WLK"; Filename: "{app}\{#ProductExe}"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\{#ProductExe}"; Parameters: "--enable-autostart --quiet"; Flags: runhidden waituntilterminated runasoriginaluser; Check: AutostartSelected
+Filename: "{app}\{#ProductExe}"; Parameters: "--disable-autostart --quiet"; Flags: runhidden waituntilterminated runasoriginaluser; Check: AutostartNotSelected
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\app"
@@ -82,16 +111,14 @@ begin
       Result := True;
 end;
 
-procedure CurStepChanged(CurStep: TSetupStep);
+function AutostartSelected(): Boolean;
 begin
-  if CurStep = ssPostInstall then
-  begin
-    if WizardIsTaskSelected('autostart') then
-      RegWriteStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run',
-        'EXPC-WLK', '"' + ExpandConstant('{app}\EXPC-WLK.exe') + '"')
-    else
-      RegDeleteValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'EXPC-WLK');
-  end;
+  Result := WizardIsTaskSelected('autostart');
+end;
+
+function AutostartNotSelected(): Boolean;
+begin
+  Result := not WizardIsTaskSelected('autostart');
 end;
 
 function InitializeUninstall(): Boolean;
@@ -99,11 +126,7 @@ begin
   if UninstallSilent then
     RemoveAllData := FullCleanupParameter()
   else
-    RemoveAllData := MsgBox(
-      'Keep EXPC-WLK user settings and downloaded models?' + #13#10 + #13#10 +
-      'Choose Yes to keep them (recommended).' + #13#10 +
-      'Choose No to remove all settings and models.',
-      mbConfirmation, MB_YESNO) = IDNO;
+    RemoveAllData := MsgBox(CustomMessage('KeepDataPrompt'), mbConfirmation, MB_YESNO) = IDNO;
   Result := True;
 end;
 
